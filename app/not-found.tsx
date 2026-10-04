@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { IMG } from "@/lib/images";
 import { Backdrop } from "@/components/ui/Backdrop";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { PillButton } from "@/components/ui/PillButton";
+import { restaurant } from "@/restaurants/active";
 
 export const metadata: Metadata = {
   title: "Page not found",
@@ -11,8 +11,8 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   return (
-    <section className="dots relative isolate flex min-h-svh items-center justify-center overflow-hidden px-5 pt-28 pb-20 text-center">
-      <Backdrop image={IMG.storefrontNight} position="50% 28%" opacity={0.5} />
+    <section className="scope-deep dots relative isolate flex min-h-svh items-center justify-center overflow-hidden px-5 pt-28 pb-20 text-center">
+      <Backdrop image={restaurant.home.hero.backdrop} opacity={0.5} />
       <div className="scrim-hero absolute inset-0 -z-10" aria-hidden="true" />
       <div>
         <Eyebrow both className="mb-6">

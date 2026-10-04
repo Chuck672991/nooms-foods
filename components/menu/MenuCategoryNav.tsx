@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { SITE } from "@/lib/site";
 import { Phone } from "@/components/ui/Icons";
 
 type Category = { id: string; label: string };
+type NavAction = { label: string; href: string; icon?: "phone" };
 
 /**
  * Sticky in-page category pills with scroll-spy. Clicking smooth-scrolls
@@ -12,8 +12,17 @@ type Category = { id: string; label: string };
  * pill; scrolling updates the highlight via IntersectionObserver. On phones
  * the row scrolls horizontally and keeps the active pill centred.
  */
-export function MenuCategoryNav({ categories }: { categories: Category[] }) {
+export function MenuCategoryNav({
+  categories,
+  action,
+}: {
+  categories: Category[];
+  /** Optional extra pill after the categories (e.g. "Call for prices"). */
+  action?: NavAction;
+}) {
   const [active, setActive] = useState(categories[0]?.id ?? "");
+  // http(s) destinations (e.g. an ordering platform) open in a new tab.
+  const external = action ? /^https?:\/\//.test(action.href) : false;
   const listRef = useRef<HTMLUListElement>(null);
   const pillRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
 
@@ -52,7 +61,7 @@ export function MenuCategoryNav({ categories }: { categories: Category[] }) {
       <div className="mx-auto max-w-page px-4 py-3 sm:px-8 lg:px-14">
         <nav
           aria-label="Menu categories"
-          className="rounded-[18px] border border-cream/15 bg-ink-900/85 p-2 shadow-[0_18px_40px_-20px_rgba(0,0,0,0.9)] backdrop-blur-xl sm:rounded-full sm:p-2.5"
+          className="rounded-[18px] border border-foreground/15 bg-background/85 p-2 shadow-[0_18px_40px_-20px_rgba(0,0,0,0.9)] backdrop-blur-xl sm:rounded-full sm:p-2.5"
         >
           <ul
             ref={listRef}
@@ -71,8 +80,8 @@ export function MenuCategoryNav({ categories }: { categories: Category[] }) {
                     aria-current={isActive ? "true" : undefined}
                     className={`flex min-h-10 items-center rounded-full border px-4 text-[0.7rem] font-bold tracking-[0.14em] uppercase transition-colors duration-200 ${
                       isActive
-                        ? "border-yellow bg-yellow text-on-yellow"
-                        : "border-cream/20 text-cream hover:border-yellow hover:text-yellow"
+                        ? "border-accent bg-primary text-on-primary"
+                        : "border-foreground/20 text-foreground hover:border-accent hover:text-accent"
                     }`}
                   >
                     {cat.label}
@@ -80,15 +89,19 @@ export function MenuCategoryNav({ categories }: { categories: Category[] }) {
                 </li>
               );
             })}
-            <li className="shrink-0">
-              <a
-                href={SITE.phone.href}
-                className="flex min-h-10 items-center gap-2 rounded-full border border-yellow/60 px-4 text-[0.7rem] font-bold tracking-[0.14em] text-yellow uppercase transition-colors hover:bg-yellow hover:text-on-yellow"
-              >
-                <Phone width={14} height={14} />
-                Call for prices
-              </a>
-            </li>
+            {action ? (
+              <li className="shrink-0">
+                <a
+                  href={action.href}
+                  {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  className="flex min-h-10 items-center gap-2 rounded-full border border-accent/60 px-4 text-[0.7rem] font-bold tracking-[0.14em] text-accent uppercase transition-colors hover:bg-primary hover:text-on-primary"
+                >
+                  {action.icon === "phone" ? <Phone width={14} height={14} /> : null}
+                  {action.label}
+                  {external ? <span className="sr-only"> (opens in a new tab)</span> : null}
+                </a>
+              </li>
+            ) : null}
           </ul>
         </nav>
       </div>

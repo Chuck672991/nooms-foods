@@ -6,21 +6,21 @@ export type Crumb = { label: string; href?: string };
 export function Breadcrumb({ items }: { items: Crumb[] }) {
   return (
     <nav aria-label="Breadcrumb">
-      <ol className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[0.72rem] font-semibold tracking-[0.16em] uppercase text-cream/70">
+      <ol className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[0.72rem] font-semibold tracking-[0.16em] uppercase text-foreground/70">
         {items.map((item, i) => {
           const last = i === items.length - 1;
           return (
             <li key={item.label} className="flex items-center gap-2.5">
               {item.href && !last ? (
-                <Link href={item.href} className="transition-colors hover:text-yellow">
+                <Link href={item.href} className="transition-colors hover:text-accent">
                   {item.label}
                 </Link>
               ) : (
-                <span aria-current={last ? "page" : undefined} className={last ? "text-yellow" : ""}>
+                <span aria-current={last ? "page" : undefined} className={last ? "text-accent" : ""}>
                   {item.label}
                 </span>
               )}
-              {!last ? <span aria-hidden="true" className="text-cream/40">/</span> : null}
+              {!last ? <span aria-hidden="true" className="text-foreground/40">/</span> : null}
             </li>
           );
         })}

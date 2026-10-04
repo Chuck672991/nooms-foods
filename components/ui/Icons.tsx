@@ -1,4 +1,5 @@
 import type { SVGProps } from "react";
+import type { IconName } from "@/restaurants/types";
 
 type IconProps = SVGProps<SVGSVGElement>;
 
@@ -73,3 +74,57 @@ export const Spark = (p: IconProps) => (
     <path d="M12 2c.6 4.6 3.4 7.4 8 8-4.6.6-7.4 3.4-8 8-.6-4.6-3.4-7.4-8-8 4.6-.6 7.4-3.4 8-8Z" />
   </svg>
 );
+
+export const TikTok = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <path d="M14 4v10.5a3.5 3.5 0 1 1-3.5-3.5" />
+    <path d="M14 4c.4 2.4 2 4 4.5 4.2" />
+  </svg>
+);
+
+export const YouTube = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <rect x="3" y="6" width="18" height="12" rx="4" />
+    <path d="m10.5 9.5 4 2.5-4 2.5Z" />
+  </svg>
+);
+
+export const XMark = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <path d="M5 5l14 14M19 5 5 19" />
+  </svg>
+);
+
+export const WhatsApp = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <path d="M3 21l1.6-4.6A8.5 8.5 0 1 1 8 19.6L3 21Z" />
+    <path d="M9.2 9.2c.3 2 2.5 4.2 4.5 4.5l1.2-1.2-1.7-1-.8.7c-.8-.3-1.6-1.1-1.9-1.9l.7-.8-1-1.7-1 1.4Z" />
+  </svg>
+);
+
+export const Mail = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <path d="m3.5 7 8.5 6 8.5-6" />
+  </svg>
+);
+
+const ICON_MAP: Record<IconName, (p: IconProps) => React.JSX.Element> = {
+  pin: MapPin,
+  phone: Phone,
+  clock: Clock,
+  instagram: Instagram,
+  facebook: Facebook,
+  tiktok: TikTok,
+  youtube: YouTube,
+  x: XMark,
+  whatsapp: WhatsApp,
+  messenger: Messenger,
+  mail: Mail,
+};
+
+/** Icon by semantic name, so configs can say `icon: "phone"` without importing SVGs. */
+export function Icon({ name, ...props }: { name: IconName } & IconProps) {
+  const Component = ICON_MAP[name];
+  return <Component {...props} />;
+}

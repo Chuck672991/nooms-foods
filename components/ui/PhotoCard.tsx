@@ -1,11 +1,12 @@
 import Image from "next/image";
 import type { CSSProperties } from "react";
-import type { Img } from "@/lib/images";
+import type { Img } from "@/restaurants/types";
 
 /**
  * Sharp, framed photo shown at (or near) its native resolution: a tilted
- * "stuck-on" print that suits Nooms' casual, playful tone and keeps the real
- * photography crisp where full-bleed would not.
+ * "stuck-on" print that keeps real photography crisp where full-bleed would
+ * not. The frame is always the light tone (`on-deep`) so it reads on any
+ * theme; the crop focus comes from `image.position`.
  */
 export function PhotoCard({
   image,
@@ -14,7 +15,6 @@ export function PhotoCard({
   caption,
   className = "",
   imageClassName = "",
-  position,
   priority = false,
   style,
 }: {
@@ -25,13 +25,12 @@ export function PhotoCard({
   caption?: string;
   className?: string;
   imageClassName?: string;
-  position?: string;
   priority?: boolean;
   style?: CSSProperties;
 }) {
   return (
     <figure
-      className={`bg-cream p-2 pb-2 shadow-[0_24px_60px_-18px_rgba(0,0,0,0.8)] ${className}`}
+      className={`bg-on-deep p-2 pb-2 shadow-[0_24px_60px_-18px_rgba(0,0,0,0.8)] ${className}`}
       style={{ transform: `rotate(${rotate}deg)`, borderRadius: 10, ...style }}
     >
       <div className="relative overflow-hidden" style={{ borderRadius: 6 }}>
@@ -43,11 +42,11 @@ export function PhotoCard({
           sizes={sizes}
           preload={priority}
           className={`h-full w-full object-cover ${imageClassName}`}
-          style={position ? { objectPosition: position } : undefined}
+          style={image.position ? { objectPosition: image.position } : undefined}
         />
       </div>
       {caption ? (
-        <figcaption className="px-1 pt-2 pb-1 text-center text-[0.8rem] font-semibold tracking-wide text-on-yellow">
+        <figcaption className="px-1 pt-2 pb-1 text-center text-[0.8rem] font-semibold tracking-wide text-deep">
           {caption}
         </figcaption>
       ) : null}

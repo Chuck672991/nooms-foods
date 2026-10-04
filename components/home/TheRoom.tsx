@@ -1,99 +1,102 @@
-import { IMG } from "@/lib/images";
-import { SITE } from "@/lib/site";
+import type { ResolvedButton } from "@/lib/restaurant";
+import type { Contact, HomeContent } from "@/restaurants/types";
 import { container, sectionY } from "@/lib/utils";
+import { ActionButtons } from "@/components/ui/ActionButtons";
+import { HoursBlock } from "@/components/ui/Hours";
 import { Clock, MapPin, Phone } from "@/components/ui/Icons";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { PhotoCard } from "@/components/ui/PhotoCard";
-import { PillButton } from "@/components/ui/PillButton";
 import { Reveal } from "@/components/ui/Reveal";
+import { RichText } from "@/components/ui/RichText";
 
 /**
- * "The Room": the space, plus a proof strip. Qissa's strip shows a Google
- * rating; ours shows verified where/when/how facts instead.
+ * The space: copy + two captioned prints, plus a proof strip of verified
+ * where / when / how-to-reach facts (Qissa's strip shows a Google rating).
  */
-export function TheRoom() {
+export function TheRoom({
+  content,
+  button,
+  contact,
+  services,
+}: {
+  content: HomeContent["place"];
+  button: ResolvedButton;
+  contact: Contact;
+  services: string[];
+}) {
+  const [a, b] = content.photos;
   return (
     <section className={`${sectionY} dots relative overflow-hidden`}>
       <div className={`${container} grid items-center gap-20 lg:grid-cols-[1fr_1fr] lg:gap-24`}>
         <Reveal>
-          <Eyebrow className="mb-6">The place</Eyebrow>
+          <Eyebrow className="mb-6">{content.eyebrow}</Eyebrow>
           <h2 className="display h-section max-w-xl text-balance">
-            Look for the <em>glow.</em>
+            <RichText text={content.title} />
           </h2>
           <div className="lead mt-8 max-w-xl space-y-5 text-pretty">
-            <p>
-              You&apos;ll spot us by the sign: black and glowing, a pair of yellow eyes, a tongue
-              sticking out. Underneath, a counter with the kitchen in plain view.
-            </p>
-            <p>
-              Pull up a seat or take it to go. We&apos;re on Shahrah-e-Faisal in IBEX, Karachi,
-              and it&apos;s easy to find once you know what to look for.
-            </p>
+            {content.paragraphs.map((p) => (
+              <p key={p}>{p}</p>
+            ))}
           </div>
           <div className="mt-10">
-            <PillButton href={SITE.directionsHref} external destination="Google Maps directions">
-              Get directions
-            </PillButton>
+            <ActionButtons buttons={[button]} />
           </div>
         </Reveal>
 
         <div className="relative mx-auto grid w-full max-w-lg grid-cols-2 items-start gap-5 sm:gap-8">
           <Reveal variant="image" className="mt-0">
             <PhotoCard
-              image={IMG.storefrontNight}
+              image={a.image}
               sizes="(min-width: 640px) 240px, 45vw"
               rotate={-3}
               imageClassName="aspect-[3/4]"
-              caption="The sign after dark"
+              caption={a.caption}
             />
           </Reveal>
           <Reveal variant="image" delay={150} className="mt-14">
             <PhotoCard
-              image={IMG.storefrontDay}
+              image={b.image}
               sizes="(min-width: 640px) 240px, 45vw"
               rotate={3}
               imageClassName="aspect-[3/4]"
-              position="50% 30%"
-              caption="By day"
+              caption={b.caption}
             />
           </Reveal>
         </div>
       </div>
 
       <Reveal delay={100} className={`${container} mt-24`}>
-        <div className="grid divide-y divide-cream/15 overflow-hidden rounded-card border border-cream/15 bg-ink-800 md:grid-cols-3 md:divide-x md:divide-y-0">
+        <div className="grid divide-y divide-foreground/15 overflow-hidden rounded-card border border-foreground/15 bg-surface md:grid-cols-3 md:divide-x md:divide-y-0">
           <div className="flex items-start gap-4 p-7 sm:p-9">
-            <MapPin className="mt-1 shrink-0 text-yellow" />
+            <MapPin className="mt-1 shrink-0 text-accent" />
             <div>
               <p className="eyebrow mb-3">Find us</p>
-              <p className="text-[0.95rem] leading-relaxed text-cream/85">
-                {SITE.address.area}
+              <p className="text-[0.95rem] leading-relaxed text-foreground/85">
+                {contact.address.area}
                 <br />
-                Shahrah-e-Faisal, P.E.C.H.S. Block 2
+                {contact.address.short}
               </p>
             </div>
           </div>
           <div className="flex items-start gap-4 p-7 sm:p-9">
-            <Clock className="mt-1 shrink-0 text-yellow" />
+            <Clock className="mt-1 shrink-0 text-accent" />
             <div>
               <p className="eyebrow mb-3">Hours</p>
-              <p className="text-[0.95rem] leading-relaxed text-cream/85">
-                Evenings, {SITE.hours.summary}
-                <br />
-                <span className="text-cream/55">{SITE.hours.note}</span>
-              </p>
+              <div className="text-[0.95rem] leading-relaxed text-foreground/85">
+                <HoursBlock hours={contact.hours} noteClassName="block text-foreground/55" />
+              </div>
             </div>
           </div>
           <div className="flex items-start gap-4 p-7 sm:p-9">
-            <Phone className="mt-1 shrink-0 text-yellow" />
+            <Phone className="mt-1 shrink-0 text-accent" />
             <div>
               <p className="eyebrow mb-3">Call</p>
-              <p className="text-[0.95rem] leading-relaxed text-cream/85">
-                <a href={SITE.phone.href} className="transition-colors hover:text-yellow">
-                  {SITE.phone.display}
+              <p className="text-[0.95rem] leading-relaxed text-foreground/85">
+                <a href={`tel:${contact.phone.e164}`} className="transition-colors hover:text-accent">
+                  {contact.phone.display}
                 </a>
                 <br />
-                <span className="text-cream/55">Dine in · Takeaway · Home delivery</span>
+                <span className="text-foreground/55">{services.join(" · ")}</span>
               </p>
             </div>
           </div>

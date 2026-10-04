@@ -1,40 +1,27 @@
-import type { Metadata } from "next";
-import { IMG } from "@/lib/images";
-import { ARTICLES } from "@/lib/journal";
-import { SITE } from "@/lib/site";
-import { container } from "@/lib/utils";
+import { notFound } from "next/navigation";
 import { ArticleCard } from "@/components/journal/ArticleCard";
 import { CTABanner } from "@/components/ui/CTABanner";
 import { PageHero } from "@/components/ui/PageHero";
-import { PillButton } from "@/components/ui/PillButton";
 import { Reveal } from "@/components/ui/Reveal";
+import { ctaProps } from "@/lib/restaurant";
+import { pageMetadata } from "@/lib/seo";
+import { container } from "@/lib/utils";
+import { restaurant } from "@/restaurants/active";
 
-export const metadata: Metadata = {
-  title: "Journal",
-  description:
-    "Notes and guides from Nooms Foods in Karachi: how to find us on Shahrah-e-Faisal and how to dine in, take away or get delivery.",
-  alternates: { canonical: "/journal" },
-};
+export const metadata = pageMetadata(restaurant, "journal", "/journal");
 
 export default function JournalPage() {
+  const { journal } = restaurant;
+  if (!journal) notFound();
+
   return (
     <>
-      <PageHero
-        crumbs={[{ label: "Home", href: "/" }, { label: "Journal" }]}
-        eyebrow="Notes from the counter"
-        title="Journal"
-        lead="Guides and notes from the Nooms Foods kitchen."
-        backdrop={IMG.burger}
-        backdropPosition="50% 45%"
-        card={IMG.storefrontNight}
-        cardAspect="aspect-[4/5]"
-        cardCaption="Look for the glow"
-      />
+      <PageHero crumbs={[{ label: "Home", href: "/" }, { label: "Journal" }]} hero={journal.hero} />
 
       <section className={`${container} py-24 sm:py-32`}>
         {/* Grid scales to any number of articles without layout changes. */}
         <div className="grid gap-x-12 gap-y-20 md:grid-cols-2">
-          {ARTICLES.map((article, i) => (
+          {journal.articles.map((article, i) => (
             <Reveal key={article.slug} delay={i * 100}>
               <ArticleCard article={article} />
             </Reveal>
@@ -42,23 +29,7 @@ export default function JournalPage() {
         </div>
       </section>
 
-      <CTABanner
-        eyebrow="Hungry for the real thing?"
-        title={
-          <>
-            Come write your own <em>chapter.</em>
-          </>
-        }
-        image={IMG.loadedTrayBeef}
-        position="50% 40%"
-      >
-        <PillButton href={SITE.directionsHref} external destination="Google Maps directions">
-          Get directions
-        </PillButton>
-        <PillButton href="/menu" variant="outline" arrow>
-          View the menu
-        </PillButton>
-      </CTABanner>
+      <CTABanner {...ctaProps(journal.cta, journal.hero.backdrop, restaurant)} />
     </>
   );
 }

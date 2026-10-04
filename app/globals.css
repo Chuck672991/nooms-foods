@@ -1,43 +1,88 @@
 @import "tailwindcss";
 
 /*
- * Nooms Foods design tokens.
- * Palette sampled from the brand's own assets: black signage, white
- * lettering, the sign's yellow (#FCCC0C family) and the logo's flame orange
- * (#E35D16 family). A single yellow accent carries CTAs, labels and rules,
- * mirroring Qissa's one-accent discipline.
+ * SEMANTIC THEME TOKENS: the shared stylesheet never names a colour.
+ *
+ * The active restaurant's theme (restaurants/<slug>/brand.ts) is written to
+ * <html style="--primary: …"> by app/layout.tsx. Components use roles
+ * (bg-primary, text-foreground, bg-surface …); a different restaurant is a
+ * different set of values, not different components.
+ *
+ * The :root values below are neutral FALLBACKS only, so the page still renders
+ * if a theme variable is ever missing.
  */
-@theme {
-  --color-ink-950: #050505;
-  --color-ink-900: #0b0b0a;
-  --color-ink-800: #131210;
-  --color-ink-700: #1c1a16;
-  --color-cream: #faf3e3;
-  --color-yellow: #ffc91f;
-  --color-yellow-soft: #ffe48a;
-  --color-flame: #f2661c;
-  --color-on-yellow: #171100;
+:root {
+  --background: #0e0e0e;
+  --surface: #161616;
+  --surface-raised: #202020;
+  --foreground: #f4f1ea;
+  --primary: #d4a63a;
+  --primary-soft: #ecd08a;
+  --on-primary: #1a1405;
+  --secondary: #c4552b;
+  --deep: #060606;
+  --on-deep: #f4f1ea;
 
+  /* Never remapped by a scope: the page background, for fades into the next section. */
+  --page-bg: var(--background);
+  /* Brand accent for TEXT, icons and rules (scope-aware). Fills use --primary. */
+  --accent: var(--primary);
+  --accent-soft: var(--primary-soft);
+  /* Where hero/band scrims fade to: the page on dark themes, the deep tone on light ones. */
+  --hero-fade: var(--page-bg);
+}
+
+:root[data-theme="light"] {
+  --hero-fade: var(--deep);
+}
+
+/*
+ * "Deep" scope: header, menu overlay, footer and every section laid over a
+ * photo. Inside it the semantic roles flip to the dark/light-on-dark pair, so
+ * the same components read correctly on light AND dark themes.
+ */
+.scope-deep {
+  --background: var(--deep);
+  --foreground: var(--on-deep);
+  --surface: color-mix(in srgb, var(--deep) 92%, var(--on-deep));
+  --surface-raised: color-mix(in srgb, var(--deep) 84%, var(--on-deep));
+  --accent: var(--primary-on-deep, var(--primary));
+  --accent-soft: var(--primary-soft-on-deep, var(--primary-soft));
+  color: var(--foreground);
+}
+
+@theme {
   --radius-card: 14px;
   --container-page: 1600px;
   --ease-soft: cubic-bezier(0.22, 0.7, 0.2, 1);
 }
 
 @theme inline {
-  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
-  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-accent: var(--accent);
+  --color-primary-soft: var(--accent-soft);
+  --color-on-primary: var(--on-primary);
+  --color-secondary: var(--secondary);
+  --color-deep: var(--deep);
+  --color-on-deep: var(--on-deep);
+  --font-display: var(--font-display-face), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-body-face), ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
   html {
-    background: var(--color-ink-900);
+    background: var(--background);
     scroll-behavior: smooth;
     scroll-padding-top: 5.5rem;
   }
 
   body {
-    background: var(--color-ink-900);
-    color: var(--color-cream);
+    background: var(--background);
+    color: var(--foreground);
     font-family: var(--font-sans);
     line-height: 1.65;
     overflow-x: clip;
@@ -46,12 +91,12 @@
   }
 
   ::selection {
-    background: var(--color-yellow);
-    color: var(--color-on-yellow);
+    background: var(--primary);
+    color: var(--on-primary);
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-yellow);
+    outline: 2px solid var(--accent);
     outline-offset: 3px;
   }
 
@@ -66,7 +111,7 @@
   /* ---------- Typography ---------- */
   .display {
     font-family: var(--font-display);
-    font-variation-settings: "SOFT" 100, "WONK" 0;
+    font-variation-settings: var(--display-variation, normal);
     font-optical-sizing: auto;
   }
 
@@ -98,13 +143,13 @@
     font-weight: 600;
   }
 
-  /* Italic accent word in the paler yellow: the signature heading move. */
+  /* Italic accent word in the soft tint of the primary: the signature heading move. */
   .display em,
   .accent-italic {
     font-style: italic;
     font-weight: 500;
     letter-spacing: -0.02em;
-    color: var(--color-yellow-soft);
+    color: var(--accent-soft);
   }
 
   .eyebrow {
@@ -116,7 +161,7 @@
     letter-spacing: 0.18em;
     line-height: 1;
     text-transform: uppercase;
-    color: var(--color-yellow);
+    color: var(--accent);
   }
 
   .eyebrow-rule {
@@ -130,7 +175,7 @@
   .lead {
     font-size: clamp(1.05rem, 1.5vw, 1.25rem);
     line-height: 1.6;
-    color: color-mix(in srgb, var(--color-cream) 78%, transparent);
+    color: color-mix(in srgb, var(--foreground) 78%, transparent);
   }
 
   /* ---------- Buttons ---------- */
@@ -163,27 +208,27 @@
   }
 
   .btn-primary {
-    background: var(--color-yellow);
-    border-color: var(--color-yellow);
-    color: var(--color-on-yellow);
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--on-primary);
   }
 
   .btn-primary:hover {
-    background: var(--color-yellow-soft);
-    border-color: var(--color-yellow-soft);
-    box-shadow: 0 8px 28px -10px color-mix(in srgb, var(--color-yellow) 70%, transparent);
+    background: var(--accent-soft);
+    border-color: var(--accent-soft);
+    box-shadow: 0 8px 28px -10px color-mix(in srgb, var(--primary) 70%, transparent);
   }
 
   .btn-outline {
-    background: color-mix(in srgb, var(--color-ink-950) 40%, transparent);
-    border-color: color-mix(in srgb, var(--color-cream) 38%, transparent);
-    color: var(--color-cream);
+    background: color-mix(in srgb, var(--background) 40%, transparent);
+    border-color: color-mix(in srgb, var(--foreground) 38%, transparent);
+    color: var(--foreground);
     backdrop-filter: blur(6px);
   }
 
   .btn-outline:hover {
-    border-color: var(--color-yellow);
-    color: var(--color-yellow);
+    border-color: var(--accent);
+    color: var(--accent);
   }
 
   .btn-sm {
@@ -209,20 +254,53 @@
   /* Static star-dot texture, fixed positions, never animated. */
   .dots {
     background-image:
-      radial-gradient(circle at 8% 14%, rgba(255, 201, 31, 0.55) 0 1.4px, transparent 2px),
-      radial-gradient(circle at 22% 72%, rgba(250, 243, 227, 0.4) 0 1px, transparent 1.6px),
-      radial-gradient(circle at 37% 28%, rgba(250, 243, 227, 0.3) 0 1px, transparent 1.6px),
-      radial-gradient(circle at 55% 84%, rgba(255, 201, 31, 0.4) 0 1.2px, transparent 1.8px),
-      radial-gradient(circle at 71% 18%, rgba(250, 243, 227, 0.4) 0 1px, transparent 1.6px),
-      radial-gradient(circle at 86% 62%, rgba(255, 201, 31, 0.5) 0 1.4px, transparent 2px),
-      radial-gradient(circle at 93% 90%, rgba(250, 243, 227, 0.3) 0 1px, transparent 1.6px),
-      radial-gradient(circle at 47% 52%, rgba(250, 243, 227, 0.22) 0 1px, transparent 1.6px);
+      radial-gradient(circle at 8% 14%, color-mix(in srgb, var(--accent) 55%, transparent) 0 1.4px, transparent 2px),
+      radial-gradient(circle at 22% 72%, color-mix(in srgb, var(--foreground) 40%, transparent) 0 1px, transparent 1.6px),
+      radial-gradient(circle at 37% 28%, color-mix(in srgb, var(--foreground) 30%, transparent) 0 1px, transparent 1.6px),
+      radial-gradient(circle at 55% 84%, color-mix(in srgb, var(--accent) 40%, transparent) 0 1.2px, transparent 1.8px),
+      radial-gradient(circle at 71% 18%, color-mix(in srgb, var(--foreground) 40%, transparent) 0 1px, transparent 1.6px),
+      radial-gradient(circle at 86% 62%, color-mix(in srgb, var(--accent) 50%, transparent) 0 1.4px, transparent 2px),
+      radial-gradient(circle at 93% 90%, color-mix(in srgb, var(--foreground) 30%, transparent) 0 1px, transparent 1.6px),
+      radial-gradient(circle at 47% 52%, color-mix(in srgb, var(--foreground) 22%, transparent) 0 1px, transparent 1.6px);
   }
 
   .scrim-hero {
     background:
-      linear-gradient(180deg, rgba(5, 5, 5, 0.78) 0%, rgba(5, 5, 5, 0.35) 38%, rgba(5, 5, 5, 0.55) 70%, var(--color-ink-900) 100%),
-      radial-gradient(120% 90% at 50% 40%, transparent 30%, rgba(5, 5, 5, 0.7) 100%);
+      linear-gradient(180deg, color-mix(in srgb, var(--deep) 78%, transparent) 0%, color-mix(in srgb, var(--deep) 35%, transparent) 38%, color-mix(in srgb, var(--deep) 55%, transparent) 70%, var(--hero-fade) 100%),
+      radial-gradient(120% 90% at 50% 40%, transparent 30%, color-mix(in srgb, var(--deep) 70%, transparent) 100%);
+  }
+
+  /* Closing/immersive bands: fades in and out of the page, dark in the middle. */
+  .scrim-band {
+    --scrim-a: 55%;
+    --scrim-b: 60%;
+    background: linear-gradient(
+      180deg,
+      var(--hero-fade) 0%,
+      color-mix(in srgb, var(--deep) var(--scrim-a), transparent) 30%,
+      color-mix(in srgb, var(--deep) var(--scrim-b), transparent) 70%,
+      var(--hero-fade) 100%
+    );
+  }
+
+  /* Left-weighted scrim for text-left / image-right immersive sections. */
+  .scrim-side {
+    background:
+      linear-gradient(90deg, color-mix(in srgb, var(--deep) 85%, transparent) 0%, color-mix(in srgb, var(--deep) 35%, transparent) 55%, color-mix(in srgb, var(--deep) 60%, transparent) 100%),
+      linear-gradient(180deg, var(--hero-fade) 0%, transparent 22%, transparent 78%, var(--hero-fade) 100%);
+  }
+
+  .ribbon-gradient {
+    background: linear-gradient(90deg, var(--primary) 0%, var(--accent-soft) 50%, var(--primary) 100%);
+  }
+
+  .glow-primary {
+    background: radial-gradient(60% 50% at 50% 44%, color-mix(in srgb, var(--primary) 20%, transparent), transparent 72%);
+  }
+
+  /* The secondary brand colour, used once as a low glow. */
+  .glow-secondary {
+    background: radial-gradient(50% 45% at 30% 105%, color-mix(in srgb, var(--secondary) 28%, transparent), transparent 70%);
   }
 
   .zoom-img img {
@@ -343,33 +421,33 @@
   }
 
   /* ---------- Article prose ---------- */
-  .prose-nooms p {
+  .prose-article p {
     margin-top: 1.25rem;
     font-size: 1.1rem;
     line-height: 1.8;
-    color: color-mix(in srgb, var(--color-cream) 84%, transparent);
+    color: color-mix(in srgb, var(--foreground) 84%, transparent);
   }
 
-  .prose-nooms h2 {
+  .prose-article h2 {
     margin-top: 3rem;
     font-family: var(--font-display);
-    font-variation-settings: "SOFT" 100;
+    font-variation-settings: var(--article-variation, var(--display-variation, normal));
     font-size: 1.75rem;
     font-weight: 620;
     line-height: 1.15;
     letter-spacing: -0.015em;
   }
 
-  .prose-nooms blockquote {
+  .prose-article blockquote {
     margin: 2.5rem 0;
     padding: 0.4rem 0 0.4rem 1.6rem;
-    border-left: 3px solid var(--color-yellow);
+    border-left: 3px solid var(--accent);
     font-family: var(--font-display);
-    font-variation-settings: "SOFT" 100;
+    font-variation-settings: var(--article-variation, var(--display-variation, normal));
     font-style: italic;
     font-size: clamp(1.5rem, 3vw, 2rem);
     line-height: 1.25;
-    color: var(--color-yellow-soft);
+    color: var(--accent-soft);
   }
 }
 

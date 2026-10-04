@@ -1,57 +1,47 @@
 import Image from "next/image";
 import Link from "next/link";
-import { IMG, type Img } from "@/lib/images";
+import type { HomeContent, Img } from "@/restaurants/types";
 import { container } from "@/lib/utils";
 import { ArrowRight } from "@/components/ui/Icons";
 import { Marquee } from "@/components/ui/Marquee";
 import { Reveal } from "@/components/ui/Reveal";
+import { RichText } from "@/components/ui/RichText";
 
-type Dish = { image: Img; position?: string; contain?: boolean };
-
-const DISHES: Dish[] = [
-  { image: IMG.burger },
-  { image: IMG.loadedTrayBeef, position: "50% 40%" },
-  { image: IMG.logoBadge, contain: true },
-  { image: IMG.loadedTrayForks, position: "50% 60%" },
-  { image: IMG.cheesyPlate },
-  { image: IMG.storefrontNight, position: "50% 22%" },
-];
-
-function Circle({ dish, hidden }: { dish: Dish; hidden?: boolean }) {
+function Circle({ image, hidden }: { image: Img; hidden?: boolean }) {
   return (
     <div
       aria-hidden={hidden || undefined}
-      className="mr-7 h-44 w-44 shrink-0 overflow-hidden rounded-full border border-cream/15 bg-ink-700 sm:h-52 sm:w-52"
+      className="mr-7 h-44 w-44 shrink-0 overflow-hidden rounded-full border border-foreground/15 bg-surface-raised sm:h-52 sm:w-52"
     >
       <Image
-        src={dish.image.src}
-        alt={hidden ? "" : dish.image.alt}
-        width={dish.image.width}
-        height={dish.image.height}
+        src={image.src}
+        alt={hidden ? "" : image.alt}
+        width={image.width}
+        height={image.height}
         sizes="208px"
-        className={`h-full w-full ${dish.contain ? "bg-white object-contain p-2" : "object-cover"}`}
-        style={dish.position ? { objectPosition: dish.position } : undefined}
+        className={`h-full w-full ${image.fit === "contain" ? "bg-white object-contain p-2" : "object-cover"}`}
+        style={image.position ? { objectPosition: image.position } : undefined}
       />
     </div>
   );
 }
 
-/** "The Masterpieces" analogue: circular plates scrolling in a continuous loop. */
-export function DishMarquee() {
+/** Circular plate photos scrolling in a continuous loop. */
+export function DishMarquee({ content }: { content: HomeContent["dishes"] }) {
   return (
     <section className="overflow-hidden pt-8 pb-24 sm:pb-32">
       <div className={`${container} mb-14 flex flex-wrap items-end justify-between gap-6`}>
         <Reveal>
           <h2 className="display h-section max-w-2xl text-balance">
-            Piled high, served <em>hot.</em>
+            <RichText text={content.title} />
           </h2>
         </Reveal>
         <Reveal delay={120}>
           <Link
-            href="/gallery"
-            className="group inline-flex items-center gap-3 text-[0.78rem] font-bold tracking-[0.16em] text-yellow uppercase"
+            href={content.link.href}
+            className="group inline-flex items-center gap-3 text-[0.78rem] font-bold tracking-[0.16em] text-accent uppercase"
           >
-            View the full gallery
+            {content.link.label}
             <ArrowRight
               width={16}
               height={16}
@@ -62,11 +52,11 @@ export function DishMarquee() {
       </div>
 
       <Marquee duration={60}>
-        {DISHES.map((dish) => (
-          <Circle key={dish.image.src} dish={dish} />
+        {content.items.map((image) => (
+          <Circle key={image.src + (image.position ?? "")} image={image} />
         ))}
-        {DISHES.map((dish) => (
-          <Circle key={`${dish.image.src}-b`} dish={dish} hidden />
+        {content.items.map((image) => (
+          <Circle key={`${image.src}${image.position ?? ""}-b`} image={image} hidden />
         ))}
       </Marquee>
     </section>

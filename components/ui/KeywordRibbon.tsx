@@ -2,7 +2,7 @@ import { Marquee } from "./Marquee";
 import { Spark } from "./Icons";
 
 /**
- * Full-width yellow band of brand words/phrases separated by sparks,
+ * Full-width band in the primary colour of brand words/phrases separated by sparks,
  * scrolling in a loop. Used on the homepage (single words) and the story
  * page (phrases).
  */
@@ -16,7 +16,7 @@ export function KeywordRibbon({
   reverse?: boolean;
 }) {
   return (
-    <div className="overflow-hidden bg-[linear-gradient(90deg,#ffc91f_0%,#ffe48a_50%,#ffc91f_100%)] py-5 text-on-yellow">
+    <div className="overflow-hidden ribbon-gradient py-5 text-on-primary">
       <Marquee duration={duration} reverse={reverse}>
         {items.map((item) => (
           <span

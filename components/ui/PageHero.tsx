@@ -1,10 +1,13 @@
 import type { ReactNode } from "react";
-import type { Img } from "@/lib/images";
+import type { PageHeroContent } from "@/restaurants/types";
 import { heroDelay } from "@/lib/utils";
 import { Backdrop } from "./Backdrop";
 import { Breadcrumb, type Crumb } from "./Breadcrumb";
 import { Eyebrow } from "./Eyebrow";
 import { PhotoCard } from "./PhotoCard";
+import { RichText } from "./RichText";
+
+const CARD_ASPECT = { portrait: "aspect-[4/5]", square: "aspect-square" } as const;
 
 /**
  * Interior-page hero: blurred photo backdrop + scrim, breadcrumb, eyebrow,
@@ -13,33 +16,17 @@ import { PhotoCard } from "./PhotoCard";
  */
 export function PageHero({
   crumbs,
-  eyebrow,
-  title,
-  lead,
-  backdrop,
-  backdropPosition,
-  card,
-  cardPosition,
-  cardCaption,
-  cardAspect = "aspect-[4/5]",
+  hero,
   children,
 }: {
   crumbs: Crumb[];
-  eyebrow?: string;
-  title: ReactNode;
-  lead?: ReactNode;
-  backdrop: Img;
-  backdropPosition?: string;
-  card?: Img;
-  cardPosition?: string;
-  cardCaption?: string;
-  /** Tailwind aspect class for the card photo. */
-  cardAspect?: string;
+  hero: PageHeroContent;
   children?: ReactNode;
 }) {
+  const { eyebrow, title, lead, backdrop, card } = hero;
   return (
-    <section className="dots relative isolate flex min-h-[68svh] items-end overflow-hidden pt-36 pb-16 sm:pb-20 lg:min-h-[72svh]">
-      <Backdrop image={backdrop} position={backdropPosition} blur={22} opacity={0.8} priority />
+    <section className="scope-deep dots relative isolate flex min-h-[68svh] items-end overflow-hidden pt-36 pb-16 sm:pb-20 lg:min-h-[72svh]">
+      <Backdrop image={backdrop} blur={22} opacity={0.8} priority />
       <div className="scrim-hero absolute inset-0 -z-10" aria-hidden="true" />
 
       <div className="mx-auto grid w-full max-w-page items-end gap-12 px-5 sm:px-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:px-14">
@@ -53,7 +40,7 @@ export function PageHero({
             </div>
           ) : null}
           <h1 className="display h-page hero-rise mt-5 text-balance" style={heroDelay(280)}>
-            {title}
+            <RichText text={title} />
           </h1>
           {lead ? (
             <p className="lead hero-rise mt-6 max-w-2xl text-pretty" style={heroDelay(400)}>
@@ -73,12 +60,11 @@ export function PageHero({
             style={heroDelay(560)}
           >
             <PhotoCard
-              image={card}
+              image={card.image}
               sizes="(min-width: 1280px) 304px, 272px"
               rotate={3}
-              position={cardPosition}
-              caption={cardCaption}
-              imageClassName={cardAspect}
+              caption={card.caption}
+              imageClassName={CARD_ASPECT[card.aspect ?? "portrait"]}
             />
           </div>
         ) : null}
