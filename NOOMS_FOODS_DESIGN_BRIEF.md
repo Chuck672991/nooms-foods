@@ -1,3 +1,8 @@
+> **NOTE (2026-10-04):** this document is the *pre-implementation* research brief (Qissa pattern analysis). It is still the
+> visual/interaction source of truth, but its status lines ("no implementation performed", "project could not be inspected")
+> and sections 6, 18, 20 and 22 are **superseded**. The site is now built as a reusable, config-driven restaurant template:
+> see **`PROJECT_BRIEF.md`** (purpose, architecture, theme, current state) and `README.md`.
+
 # Nooms Foods — Design Brief
 ### Recreating the Qissa design language for a Next.js rebuild
 
