@@ -4,9 +4,12 @@
 > It explains **why this project exists**, **how it is architected**, **what the design language is**,
 > and **what is done / open**. Keep it current when the architecture changes.
 > Companion docs: `README.md` (operating manual, commands) · `NOOMS_FOODS_DESIGN_BRIEF.md` (original
-> Qissa-based visual research, still the visual source of truth) · `restaurants/types.ts` (the config contract).
+> Qissa-based visual research) · **`Qissa Website — UI Reverse-Engineering Spec.md` (source of truth for UI
+> BEHAVIOUR: navbar, starfield, hero parallax, gallery, cuisine, signature cards, overlay, reveal; exact numbers)** ·
+> `restaurants/types.ts` (the config contract).
 
-Last verified: 2026-10-04 (tsc ✓, eslint ✓, `next build` ✓ for both restaurants, functional + visual regression ✓).
+Last verified: 2026-10-04 (tsc ✓, eslint ✓, `next build` ✓ for both restaurants, functional suite ✓, 45-check UI-behaviour suite ✓,
+rendered text/links/alts identical to the pre-refactor site).
 
 ---
 
@@ -126,8 +129,12 @@ Components never name a colour; they use **semantic roles**. Per restaurant: `th
   **`--font-display-face`** / **`--font-body-face`**; `theme.fonts.displayVariation` → `--display-variation`
   (Nooms: Fraunces `"SOFT" 100, "WONK" 0`); `articleVariation` → article headings/quotes.
 - Shared CSS classes (in `globals.css`): `.display` `.h-hero/.h-page/.h-section/.h-card` `.accent-italic` `.eyebrow` `.lead`
-  `.btn(.btn-primary/.btn-outline/.btn-sm)` `.dots` `.scrim-hero/.scrim-band/.scrim-side` `.glow-primary/.glow-secondary`
-  `.ribbon-gradient` `.zoom-img` `.marquee` `.reveal` `.hero-rise` `.nav-overlay` `.prose-article` `.scope-deep`.
+  `.btn(.btn-primary/.btn-outline/.btn-sm)` `.scrim-hero/.scrim-band/.scrim-side` `.glow-primary/.glow-secondary`
+  `.ribbon-gradient` `.zoom-img` `.marquee` `.reveal` `.hero-rise` `.nav-overlay` `.prose-article` `.scope-deep`
+  · behaviour classes from the UI spec: `.site-header(.scrolled)` `.brand-logo` `.starfield` `.section-tint` `.region-row/.region/.region__img`
+  `.masonry/.masonry__cell/.masonry__item` `.dish-card/.dish-card__img/.dish-card__badge/.dish-card__body`.
+- **Easing tokens**: `--ease` = `cubic-bezier(.22,.61,.36,1)` (snappy ease-out, almost everything) and `--ease-io` = `cubic-bezier(.65,.05,.36,1)`
+  (clip-path reveals: menu overlay, eyebrow dash). `--accent-grad` is the gradient used by accent words, derived from the theme tokens.
 
 **Nooms palette** (sampled from the brand's own assets): background `#0b0b0a`, surface `#131210`, surface-raised `#1c1a16`,
 foreground `#faf3e3`, primary (sign yellow) `#ffc91f`, primary-soft `#ffe48a`, on-primary `#171100`, secondary (logo flame) `#f2661c`,
@@ -143,9 +150,10 @@ Data flow: `restaurants/<slug>` → `restaurants/active.ts` → **`app/**` pages
 |---|---|
 | **layout/** | `Header` (client: sticky 3-zone bar, full-screen numbered nav overlay, focus trap, ESC, scroll lock; props: name, logo, links, order, visit, locationLine) · `Footer` (takes `restaurant` + links) |
 | **ui/** primitives | `PillButton` `ActionButtons` `Eyebrow` `SectionHeading` `RichText` `Icons`/`Icon` `Reveal` `CountUp` `Marquee` `KeywordRibbon` `Backdrop` `PhotoCard` `PageHero` `Breadcrumb` `CTABanner` `ImageTextSection` `HoursBlock` |
-| **home/** sections | `Hero` `BrandIntro` `DishMarquee` `KeywordRibbon` `CuisineGrid` `KitchenMoment` `FeaturedItems` `StatBand` `TheRoom` `FollowBand` `SplitConversion` |
+| **ui/** behaviour (client) | `StarField` (fixed twinkling canvas, dark themes only) · `Parallax` (hero media drift) · `HeroVideo` (optional footage) · `TiltCard` (3D mouse-follow tilt) · `Reveal` · `CountUp` |
+| **home/** sections | `Hero` `BrandIntro` `DishMarquee` `KeywordRibbon` `CuisineGrid` (flex-grow hover row) `KitchenMoment` `FeaturedItems` (12-col dish cards + tilt) `StatBand` `TheRoom` `FollowBand` `SplitConversion` |
 | **menu/** | `MenuCategoryNav` (client: sticky pills + IntersectionObserver scroll-spy) · `MenuSection` |
-| others | `story/StoryMedia` · `gallery/GalleryGrid` · `journal/ArticleCard` · `contact/ContactInfoCard`, `MapEmbed` |
+| others | `story/StoryMedia` · `gallery/GalleryGrid` (masonry hover) · `journal/ArticleCard` · `contact/ContactInfoCard`, `MapEmbed` |
 
 `lib/restaurant.ts`: `navLinks` (Journal only if `journal`), `resolveButtons`, `ctaProps`, `featuredCards`, `socialLabel`, `siteUrl`
 (env `NEXT_PUBLIC_SITE_URL` → `seo.siteUrl` → Vercel → localhost). `lib/seo.ts`: `rootMetadata`, `rootViewport`, `pageMetadata`,
@@ -161,16 +169,34 @@ Data flow: `restaurants/<slug>` → `restaurants/active.ts` → **`app/**` pages
   serif with **one italic accent word per heading** (`*word*`), uppercase tracked **eyebrow** labels flanked by thin rules.
 - **Type scale** (classes): `.h-hero` clamp(3.4rem,12.5vw,9rem) · `.h-page` clamp(3rem,8.5vw,6.5rem) · `.h-section` clamp(2.2rem,5vw,4rem) ·
   `.h-card`. Eyebrow/buttons: 0.7–0.78rem, 700, tracking 0.15–0.18em, uppercase. Pills are fully rounded; cards `--radius-card` 14px; container 1600px.
-- **Header**: sticky, 3 zones (MENU ☰ · logo · Order + Visit pills), transparent at top → blurred `deep` bar after 24px scroll. Pills stay visible on mobile (compact, no external icon <640px).
-- **Motion** (transform/opacity only, `prefers-reduced-motion` respected everywhere, `@media (scripting: none)` fallback shows content):
-  scroll reveals (0.85s `cubic-bezier(.22,.7,.2,1)`, IntersectionObserver, staggered), hero entrance (`.hero-rise`), CSS-only marquees (60s dish loop,
-  pause on hover), stat count-up (~2s ease-out, final value server-rendered), nav overlay (0.3s fade + 55ms staggered link rise), button hover/press.
-- **Menu page**: sticky pill bar with scroll-spy + smooth scroll (`scroll-mt-44`), per-category prints + heading/rule/italic tagline + 1- or 2-column items.
-- **Gallery**: 2/3-column CSS-columns masonry, captions always visible, **no lightbox** (matches reference).
+- **Header (spec §2)**: fixed, 3 zones (MENU ☰ · logo · Order + Visit pills). One class, `.scrolled`, toggled past **60px** (no re-render); height = logo + padding so
+  transitioning padding and logo size together condenses it **136px → 91px, logo 92px → 66px** (phones 77px → 61px) over **0.5s `--ease`**, while the bar gains
+  `deep` at 72% + `blur(16px) saturate(1.2)` + a hairline (light themes use 92% opacity). Pills stay visible on phones (compact, no external icon <640px).
+  Sticky/anchor offsets that depend on it: `MenuCategoryNav` `top-[57px] md:top-[91px]`, `scroll-padding-top: 6rem`, `MenuSection scroll-mt-44`, `PageHero pt-40`.
+- **Full-screen menu (spec appendix)**: `clip-path: circle(0% → 150% at <hamburger centre>)` over **0.8s `--ease-io`** (origin written to `--cx/--cy` on open),
+  collapses the same way; links rise in with a 60ms stagger after it starts.
+- **Starfield (spec §1)**: one fixed full-viewport `<canvas class="starfield">` (z-0, pointer-events none), ≤180 stars (viewport area ÷ 9000), ~18% soft-accent stars with an 8px glow,
+  each pulsing 40–100%, mouse parallax by depth + slow scroll drift. Colours come from the theme (`--foreground`, `--primary-soft`). `main` is `relative z-[1]`; opaque alternate
+  sections use `.section-tint` (surface at 82%) so stars show through. **Only rendered when `theme.mode === "dark"`**; skipped under reduced motion; rebuilt only on width change.
+- **Hero media (spec §3)**: scale **1.08** + scroll **parallax** (`translateY(progress × -110px)`, progress −1…1, skipped offscreen) on hero/PageHero backdrops, a two-layer scrim
+  (vertical dark→light→dark + left→right fade, `.scrim-hero`), and **optional muted/looping/autoplay `<video>`** via `hero.video` / `PageHeroContent.video` (poster = backdrop image;
+  Nooms has no footage, so it still uses the blurred photo).
+- **Gallery (spec §4)**: CSS multi-column masonry (2 cols phone, 3 from lg; gap `clamp(12px,1.6vw,20px)`), 14px radius + hairline border; hover/focus-within: image zoom **1.06 over 1.2s**,
+  bottom scrim fades in (0.4s), caption (hidden at rest) slides up 6px + fades in; touch screens always show captions. No lightbox.
+- **Cuisine (spec §5)**: from lg a flex row of equal columns; hovering the row dims every tile (`opacity .45; grayscale(.9) brightness(.85); flex-grow .95`) and the hovered/keyboard-focused one
+  returns to colour and grows (`flex-grow 1.6`, `.55s`), image micro-zoom 1.03. Image height is fixed from the row width (container-query units, `--n` tiles) so the row never jumps. Below lg: plain grid.
+- **Signatures (spec §6)**: 12-column grid, first two cards large (5+7), the rest in even spans of up to four per row; full-bleed photo cards (`min-height 340px`, bottom scrim, hover zoom 1.02→1.09 over 1.2s,
+  border + shadow on hover), glass badge pill, body at `translateZ(30px)`, and **`TiltCard`** (±7° rotateY/rotateX, `perspective(900px)`, 6px lift; off on touch and reduced motion). Cards link to `/menu#<category>`
+  when built from menu items; editorial cards link only if `href` is set.
+- **Type & reveal (spec §6/appendix)**: eyebrow `.72rem / 600 / .34em` with a 26px dash that wipes in (clip-path, `--ease-io`); H2 `clamp(2rem,4.6vw,3.6rem)`; accent words are **gradient text**
+  (`--accent-grad`); `.reveal` = 34px rise, 1s, `--ease`, siblings staggered in 0.08s steps capped at 4 (`stagger()` in `lib/utils.ts`).
+- **Other motion** (transform/opacity only, `prefers-reduced-motion` respected everywhere, `@media (scripting: none)` fallback shows content): hero entrance (`.hero-rise`), CSS-only marquees
+  (60s dish loop, pause on hover), stat count-up (~2s ease-out, final value server-rendered), button hover/press.
+- **Menu page**: sticky pill bar with scroll-spy + smooth scroll, per-category prints + heading/rule/italic tagline + 1- or 2-column items.
 - **Photo treatment (important, resolution-driven)**: Nooms' supplied photos are tiny (145–289px). Layouts therefore use **`PhotoCard`** (tilted
   light-framed prints at near-native size) and **`Backdrop`** (blurred, scaled, saturated photo + `scrim-*` overlays) instead of full-bleed sharp photos.
   If a restaurant has high-res photography the same layouts work; a true full-bleed mode is not implemented.
-- **Adaptations from Qissa** (deliberate): Google-reviews band → `FollowBand` (social); stats use only verified facts; "Private Dining" dropped (unconfirmed);
+- **Adaptations from Qissa** (deliberate; colours, copy and data are never changed by behaviour work): Google-reviews band → `FollowBand` (social); stats use only verified facts; "Private Dining" dropped (unconfirmed);
   no PDF menus; no contact form (no backend) → `contactPage.channels`; Reserve/Order → config `actions`.
 
 ## 8. Nooms Foods: facts, content rules, assets
@@ -205,6 +231,10 @@ Data flow: `restaurants/<slug>` → `restaurants/active.ts` → **`app/**` pages
 - **Per-image `position`/`fit`** live on `Img`, and are overridden per usage with `pos()`/`contain()`; layouts stay generic.
 - **`.prose-article` uses `articleVariation`** (Fraunces' automatic "wonky" forms are kept for article headings/quotes) so the Nooms refactor stayed pixel-identical.
 - Photo-print caption ink uses `deep` (was a yellow-theme token); the only intentional visual delta of the refactor (`#171100`→`#050505`, imperceptible). Hero scroll cue anchor is `#intro`.
+- **Behaviour follows the Qissa UI spec; colours/copy/data stay the restaurant's.** Spec colours (navy/gold) are mapped to theme tokens; font weights stay the display font's (not Cormorant's 340);
+  our photos are tiny, so the full-bleed signature cards are inherently soft (the hover/tilt effects are what the spec asks for).
+- **Starfield is dark-theme only** (cream dots on white would read as dust); the old static `.dots` texture was removed.
+- **Header height is derived** (logo + padding), not fixed, so the shrink animates with two transitions exactly as in the spec.
 - `ImageTextSection`, `Marquee`, etc. expect items to carry their own end-spacing (margin), not `gap`, so marquee loops are seamless.
 
 ## 11. Tooling & gotchas
@@ -229,7 +259,10 @@ Data flow: `restaurants/<slug>` → `restaurants/active.ts` → **`app/**` pages
    (Tooling used: `puppeteer-core` driving local Google Chrome; keep such scripts out of the repo or under `scripts/`.)
 4. **Functional**: nav overlay opens/ESC closes/focus returns/Tab trap; header actions match config; menu pills scroll-spy; count-up; reduced-motion; all internal links 200;
    one `<h1>` per page; every `<img>` has `alt`; external links `target=_blank rel=noopener`; no horizontal overflow at 360/390/768/1024/1920; no console errors.
-5. **Prove genericity**: point `active.ts` at `example-burger-house`, confirm zero Nooms strings/assets/colours in rendered HTML and that optional features (journal) disappear cleanly.
+5. **UI behaviour**: measure each spec'd behaviour in headless Chrome (header 136→91px and logo 92→66px at the 60px threshold, 0.5s/`--ease`; star canvas fixed z-0 with animating pixels;
+   parallax = formula; reveal 34px/1s; eyebrow/H2 metrics; cuisine flex-grow/opacity/filter + no row jump + image widens; 12-col card widths; tilt transform ≤±7°; gallery hover; overlay circle
+   0%→150% from the hamburger; reduced-motion and touch fallbacks). Last result: 45/45.
+6. **Prove genericity**: point `active.ts` at `example-burger-house`, confirm zero Nooms strings/assets/colours in rendered HTML and that optional features (journal) disappear cleanly.
 
 ## 13. Common tasks
 

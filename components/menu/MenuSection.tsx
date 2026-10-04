@@ -1,5 +1,5 @@
 import type { MenuCategory, MenuItem } from "@/restaurants/types";
-import { container } from "@/lib/utils";
+import { container, stagger } from "@/lib/utils";
 import { PhotoCard } from "@/components/ui/PhotoCard";
 import { Reveal } from "@/components/ui/Reveal";
 
@@ -73,7 +73,7 @@ export function MenuSection({
           {items.length ? (
             <ul className={`mt-10 grid gap-x-14 gap-y-8 ${items.length > 2 ? "sm:grid-cols-2" : "max-w-md"}`}>
               {items.map((item, i) => (
-                <Reveal as="li" key={item.id} delay={i * 60}>
+                <Reveal as="li" key={item.id} delay={stagger(i)}>
                   <div className="flex items-baseline gap-3 border-b border-foreground/12 pb-3">
                     <h3 className="display text-[1.35rem] leading-tight font-[560]">{item.name}</h3>
                     {item.tags?.map((tag) => (

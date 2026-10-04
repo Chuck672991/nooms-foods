@@ -101,6 +101,7 @@ export function featuredCards(r: RestaurantConfig): FeaturedCard[] {
       title: item.name,
       description: [item.description, item.price].filter(Boolean).join(" · "),
       image: item.image,
+      href: `/menu#${item.category}`,
     }));
 }
 

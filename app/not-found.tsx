@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   return (
-    <section className="scope-deep dots relative isolate flex min-h-svh items-center justify-center overflow-hidden px-5 pt-28 pb-20 text-center">
+    <section className="scope-deep relative isolate flex min-h-svh items-center justify-center overflow-hidden px-5 pt-28 pb-20 text-center">
       <Backdrop image={restaurant.home.hero.backdrop} opacity={0.5} />
       <div className="scrim-hero absolute inset-0 -z-10" aria-hidden="true" />
       <div>

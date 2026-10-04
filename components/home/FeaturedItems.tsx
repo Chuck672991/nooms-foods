@@ -1,47 +1,71 @@
 import Image from "next/image";
-import Link from "next/link";
 import type { ResolvedButton } from "@/lib/restaurant";
 import type { FeaturedCard, HomeContent } from "@/restaurants/types";
-import { container, sectionY } from "@/lib/utils";
+import { container, sectionY, stagger } from "@/lib/utils";
 import { ActionButtons } from "@/components/ui/ActionButtons";
 import { ArrowRight } from "@/components/ui/Icons";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { TiltCard } from "@/components/ui/TiltCard";
+
+const SPAN = {
+  3: "lg:col-span-3",
+  4: "lg:col-span-4",
+  5: "lg:col-span-5",
+  6: "lg:col-span-6",
+  7: "lg:col-span-7",
+  12: "lg:col-span-12",
+} as const;
+
+/**
+ * 12-column layout: the first two cards are large (5 + 7 columns), the rest
+ * share the remaining rows in even spans of up to four per row, so 6 items
+ * read as "2 large, then 4 smaller" and other counts still fill every row.
+ */
+function spansFor(total: number): (keyof typeof SPAN)[] {
+  if (total <= 1) return [12];
+  const spans: (keyof typeof SPAN)[] = [5, 7];
+  let rest = total - 2;
+  while (rest > 0) {
+    const row = Math.min(rest, 4);
+    for (let i = 0; i < row; i++) spans.push((12 / row) as keyof typeof SPAN);
+    rest -= row;
+  }
+  return spans;
+}
 
 function FeaturedCardView({ item }: { item: FeaturedCard }) {
+  const contained = item.image.fit === "contain";
   return (
-    <article className="group flex h-full gap-5 rounded-card border border-foreground/12 bg-surface p-3 transition-colors hover:border-accent/50 sm:gap-6 sm:p-4">
-      <div className="zoom-img relative aspect-[4/5] w-36 shrink-0 overflow-hidden rounded-[10px] bg-surface-raised sm:w-48 lg:w-52">
+    <TiltCard href={item.href} className="dish-card scope-deep h-full">
+      {item.tag ? <span className="dish-card__badge">{item.tag}</span> : null}
+      <div className="dish-card__img">
         <Image
           src={item.image.src}
           alt={item.image.alt}
           fill
-          sizes="(min-width: 640px) 208px, 144px"
-          className={item.image.fit === "contain" ? "bg-white object-contain p-2" : "object-cover"}
+          sizes="(min-width: 1024px) 58vw, (min-width: 640px) 50vw, 100vw"
+          className={contained ? "bg-white object-contain p-8 pb-32" : "object-cover"}
           style={item.image.position ? { objectPosition: item.image.position } : undefined}
         />
-        {item.tag ? (
-          <span className="absolute top-2.5 left-2.5 rounded-full bg-primary px-3 py-1.5 text-[0.62rem] leading-none font-bold tracking-[0.14em] text-on-primary uppercase">
-            {item.tag}
-          </span>
-        ) : null}
       </div>
-      <div className="flex flex-col justify-center py-2 pr-2">
+      <div className="dish-card__body">
         <h3 className="display h-card text-balance">{item.title}</h3>
         {item.description ? (
-          <p className="mt-3 text-[0.95rem] leading-relaxed text-foreground/70 text-pretty">
+          <p className="mt-2 mb-4 text-[0.85rem] leading-relaxed text-foreground/70 text-pretty">
             {item.description}
           </p>
         ) : null}
       </div>
-    </article>
+    </TiltCard>
   );
 }
 
 /**
- * Featured dishes: a 2-column grid of photo cards plus a "see the menu" card
- * and a CTA row. Cards come from the config (editorial) or from menu items
- * flagged `featured`.
+ * Featured dishes ("Signatures"): full-bleed photo cards on a 12-column grid
+ * with a glass badge, bottom scrim, hover zoom and a mouse-follow 3D tilt,
+ * plus a "see the menu" card and a CTA row. Cards come from the config
+ * (editorial) or from menu items flagged `featured`.
  */
 export function FeaturedItems({
   content,
@@ -52,37 +76,46 @@ export function FeaturedItems({
   cards: FeaturedCard[];
   buttons: ResolvedButton[];
 }) {
+  const spans = spansFor(cards.length + 1);
+
   return (
-    <section className={`${sectionY} dots`}>
+    <section className={sectionY}>
       <div className={container}>
         <Reveal>
           <SectionHeading eyebrow={content.eyebrow} title={content.title} lead={content.lead} />
         </Reveal>
 
-        <div className="mt-16 grid gap-5 lg:grid-cols-2">
+        <div className="mt-16 grid gap-[clamp(16px,2vw,26px)] sm:grid-cols-2 lg:grid-cols-12">
           {cards.map((item, i) => (
-            <Reveal key={item.title} delay={(i % 2) * 90}>
+            <Reveal key={item.title} delay={stagger(i % 4)} className={`${SPAN[spans[i]]} h-full`}>
               <FeaturedCardView item={item} />
             </Reveal>
           ))}
-          <Reveal delay={90}>
-            <Link
+          <Reveal
+            delay={stagger(cards.length % 4)}
+            // On tablet (2 columns) the CTA fills the empty cell after an odd number of
+            // cards, and spans the full row after an even number.
+            className={`${SPAN[spans[cards.length]]} h-full ${cards.length % 2 === 0 ? "sm:max-lg:col-span-2" : ""}`}
+          >
+            <TiltCard
               href="/menu"
-              className="group flex h-full min-h-48 items-center justify-between gap-6 rounded-card border border-accent/60 bg-primary p-6 text-on-primary transition-colors hover:bg-primary-soft sm:p-8"
+              className="dish-card group h-full border-primary/60 bg-primary text-on-primary hover:bg-primary-soft"
             >
-              <span className="display text-3xl leading-[1.05] font-[620] text-balance sm:text-4xl">
-                See everything on the menu
-              </span>
-              <ArrowRight
-                width={32}
-                height={32}
-                className="shrink-0 transition-transform group-hover:translate-x-1.5"
-              />
-            </Link>
+              <div className="flex items-end justify-between gap-6 p-6 sm:p-8">
+                <span className="display text-[clamp(1.6rem,2.4vw,2.25rem)] leading-[1.05] font-[620] text-balance sm:text-3xl lg:text-[clamp(1.6rem,2.4vw,2.25rem)]">
+                  See everything on the menu
+                </span>
+                <ArrowRight
+                  width={32}
+                  height={32}
+                  className="shrink-0 transition-transform group-hover:translate-x-1.5"
+                />
+              </div>
+            </TiltCard>
           </Reveal>
         </div>
 
-        <Reveal delay={100}>
+        <Reveal delay={80}>
           <div className="mt-14 flex flex-wrap items-center justify-center gap-3">
             <ActionButtons buttons={buttons} />
           </div>

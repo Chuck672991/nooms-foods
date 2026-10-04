@@ -57,7 +57,7 @@ export function MenuCategoryNav({
   }, [active]);
 
   return (
-    <div className="sticky top-[4.5rem] z-40 -mt-px sm:top-20">
+    <div className="sticky top-[57px] z-40 -mt-px md:top-[91px]">
       <div className="mx-auto max-w-page px-4 py-3 sm:px-8 lg:px-14">
         <nav
           aria-label="Menu categories"

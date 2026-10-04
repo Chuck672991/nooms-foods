@@ -1,19 +1,22 @@
 import Image from "next/image";
 import type { GalleryItem } from "@/restaurants/types";
+import { stagger } from "@/lib/utils";
 import { Reveal } from "@/components/ui/Reveal";
 
 /**
- * Masonry of real photos at their natural aspect ratios, with the caption
- * always visible bottom-left (no hover-only reveal, no lightbox: matching the
- * reference). Columns are capped at 3 because supplied photos can be small;
- * with larger originals raise `max-w` / go to 2 columns.
+ * CSS multi-column masonry of real photos at their natural aspect ratios (no
+ * forced crop, so rows stagger). Hover (or keyboard focus within): the image
+ * zooms 1.06× over 1.2s, a bottom scrim fades in and the caption slides up 6px
+ * and fades in, all together. Touch screens have no hover, so captions show
+ * there. No lightbox, matching the reference. Columns are capped at 3 because
+ * supplied photos can be small; with larger originals raise `max-w`.
  */
 export function GalleryGrid({ items }: { items: GalleryItem[] }) {
   return (
-    <ul className="mx-auto max-w-5xl columns-2 gap-4 sm:gap-5 lg:columns-3">
+    <ul className="masonry mx-auto max-w-5xl">
       {items.map((item, i) => (
-        <Reveal as="li" key={item.caption} delay={(i % 3) * 80} className="mb-4 break-inside-avoid sm:mb-5">
-          <figure className="zoom-img group relative overflow-hidden rounded-card border border-foreground/10 bg-surface-raised">
+        <Reveal as="li" key={item.caption} delay={stagger(i % 3)} className="masonry__cell">
+          <figure className="masonry__item">
             <Image
               src={item.image.src}
               alt={item.image.alt}
@@ -22,9 +25,7 @@ export function GalleryGrid({ items }: { items: GalleryItem[] }) {
               sizes="(min-width: 1024px) 330px, 46vw"
               className={`h-auto w-full ${item.image.fit === "contain" ? "bg-white p-3" : ""}`}
             />
-            <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent px-4 pt-10 pb-3.5 text-[0.82rem] font-semibold tracking-wide text-on-deep">
-              {item.caption}
-            </figcaption>
+            <figcaption>{item.caption}</figcaption>
           </figure>
         </Reveal>
       ))}

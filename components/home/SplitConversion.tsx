@@ -42,7 +42,7 @@ function ConversionCard({ card }: { card: SplitCard }) {
  */
 export function SplitConversion({ content }: { content: HomeContent["split"] }) {
   return (
-    <section className={`${sectionY} bg-surface`}>
+    <section className={`${sectionY} section-tint`}>
       <div className={container}>
         <Reveal>
           <SectionHeading align="center" eyebrow={content.eyebrow} title={content.title} />

@@ -1,5 +1,6 @@
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
+import { StarField } from "@/components/ui/StarField";
 import { navLinks } from "@/lib/restaurant";
 import { restaurantJsonLd, rootMetadata, rootViewport, themeStyle } from "@/lib/seo";
 import { restaurant } from "@/restaurants/active";
@@ -26,6 +27,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           Skip to content
         </a>
+        {/* Dark themes get the live starfield; it sits behind everything (z-0). */}
+        {theme.mode === "dark" ? <StarField /> : null}
         <Header
           name={identity.name}
           logo={identity.logo.mark}
@@ -34,7 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           visit={actions.visit}
           locationLine={`${contact.address.area} · ${contact.hours.short}`}
         />
-        <main id="main" className="flex-1">
+        <main id="main" className="relative z-[1] flex-1">
           {children}
         </main>
         <Footer restaurant={restaurant} links={links} />

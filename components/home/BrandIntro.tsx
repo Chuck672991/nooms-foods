@@ -19,7 +19,7 @@ export function BrandIntro({
 }) {
   const { sticker } = content;
   return (
-    <section id="intro" className={`${sectionY} dots relative`}>
+    <section id="intro" className={`${sectionY} relative`}>
       <div className={`${container} grid items-center gap-16 lg:grid-cols-2 lg:gap-24`}>
         <Reveal variant="image" className="relative mx-auto w-full max-w-sm lg:max-w-md">
           <PhotoCard

@@ -26,7 +26,7 @@ export function TheRoom({
 }) {
   const [a, b] = content.photos;
   return (
-    <section className={`${sectionY} dots relative overflow-hidden`}>
+    <section className={`${sectionY} relative overflow-hidden`}>
       <div className={`${container} grid items-center gap-20 lg:grid-cols-[1fr_1fr] lg:gap-24`}>
         <Reveal>
           <Eyebrow className="mb-6">{content.eyebrow}</Eyebrow>

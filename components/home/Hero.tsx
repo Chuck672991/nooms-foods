@@ -17,8 +17,8 @@ export function Hero({
 }) {
   const [first, second] = content.cards;
   return (
-    <section className="scope-deep dots relative isolate flex min-h-svh items-center justify-center overflow-hidden pt-28 pb-32">
-      <Backdrop image={content.backdrop} blur={22} opacity={0.85} priority />
+    <section className="scope-deep relative isolate flex min-h-svh items-center justify-center overflow-hidden pt-28 pb-32">
+      <Backdrop image={content.backdrop} blur={22} opacity={0.85} priority parallax video={content.video} />
       <div className="scrim-hero absolute inset-0 -z-10" aria-hidden="true" />
       <div className="glow-primary absolute inset-0 -z-10" aria-hidden="true" />
 
