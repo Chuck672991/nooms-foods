@@ -5,6 +5,7 @@ import { FeaturedItems } from "@/components/home/FeaturedItems";
 import { FollowBand } from "@/components/home/FollowBand";
 import { Hero } from "@/components/home/Hero";
 import { KitchenMoment } from "@/components/home/KitchenMoment";
+import { PromoReels } from "@/components/home/PromoReels";
 import { SplitConversion } from "@/components/home/SplitConversion";
 import { StatBand } from "@/components/home/StatBand";
 import { TheRoom } from "@/components/home/TheRoom";
@@ -18,7 +19,7 @@ export const metadata = pageMetadata(restaurant, "home", "/");
 
 export default function HomePage() {
   const r = restaurant;
-  const { home, menu, contact, identity, social } = r;
+  const { home, menu, contact, identity, social, theme } = r;
 
   const featured = featuredCards(r);
   const primarySocial = social[0];
@@ -42,7 +43,12 @@ export default function HomePage() {
 
   return (
     <>
-      <Hero content={home.hero} buttons={resolveButtons(home.hero.buttons, r)} />
+      <Hero
+        content={home.hero}
+        buttons={resolveButtons(home.hero.buttons, r)}
+        urduName={identity.nameUrdu}
+        embers={theme.ambient === "embers"}
+      />
       <BrandIntro content={home.intro} motto={identity.motto} />
       <DishMarquee content={home.dishes} />
       <KeywordRibbon items={home.ribbon} />
@@ -55,6 +61,7 @@ export default function HomePage() {
           buttons={resolveButtons(featuredRefs, r)}
         />
       ) : null}
+      {home.reels && home.reels.items.length > 0 ? <PromoReels content={home.reels} /> : null}
       <StatBand content={home.stats} />
       <TheRoom
         content={home.place}

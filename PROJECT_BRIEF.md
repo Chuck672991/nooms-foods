@@ -4,12 +4,14 @@
 > It explains **why this project exists**, **how it is architected**, **what the design language is**,
 > and **what is done / open**. Keep it current when the architecture changes.
 > Companion docs: `README.md` (operating manual, commands) · `NOOMS_FOODS_DESIGN_BRIEF.md` (original
-> Qissa-based visual research) · **`Qissa Website — UI Reverse-Engineering Spec.md` (source of truth for UI
+> Qissa-based visual research; may be deleted on branches that don't need it) · **`Qissa Website — UI Reverse-Engineering Spec.md` (source of truth for UI
 > BEHAVIOUR: navbar, starfield, hero parallax, gallery, cuisine, signature cards, overlay, reveal; exact numbers)** ·
+> **`JummaGujjar_DesignBrief.md` (the Jumma Gujjar rebrand brief) + `restaurants/jumma-gujjar/assets-manifest.md`** ·
 > `restaurants/types.ts` (the config contract).
 
-Last verified: 2026-10-04 (tsc ✓, eslint ✓, `next build` ✓ for both restaurants, functional suite ✓, 45-check UI-behaviour suite ✓,
-rendered text/links/alts identical to the pre-refactor site).
+Last verified: 2026-10-05 on branch `jumma-gujjar` (tsc ✓, eslint ✓, `next build` ✓ for Jumma Gujjar **and** the example restaurant, 47-check functional/responsive suite ✓,
+43-check promo-reels suite ✓, mobile Lighthouse: performance 85–93 / accessibility 100 / best-practices 100 / SEO 100 on every page).
+Earlier: 45-check UI-behaviour suite ✓; Nooms text/links/alts identical to the pre-refactor site.
 
 ---
 
@@ -21,8 +23,10 @@ This repo is therefore **a reusable restaurant-website template**, not a one-off
 > **One shared architecture + one restaurant folder (config + theme + menu + assets) = a fully branded restaurant site.**
 
 - **Nooms Foods** (a shawarma/burger spot in IBEX, Karachi) is the **first restaurant** on the template.
-- **`example-burger-house`** is a fictional second restaurant (red/white **light** theme) that proves nothing
-  shared is Nooms-specific. It doubles as the **starter** that new clients are scaffolded from.
+- **Jumma Gujjar Nihari** (a Karachi nihari house, Liaquatabad; Urdu + English; WhatsApp-first ordering; promo reels) is the **second live restaurant**
+  and is **the active one on the `jumma-gujjar` branch**. `restaurants/nooms/` is still in the tree (unused on this branch; delete it if the branch should ship alone).
+- **`example-burger-house`** is a fictional restaurant (red/white **light** theme) that proves nothing
+  shared is restaurant-specific. It doubles as the **starter** that new clients are scaffolded from.
 - Delivery model: **one git branch (and deployment) per restaurant**, branched from a template branch.
   Not a SaaS: no admin dashboard, auth, CMS, database or multi-tenancy. Don't add those unprompted.
 
@@ -50,13 +54,14 @@ changing how Nooms looks**.
 ```
 restaurants/                     EVERYTHING restaurant-specific
   types.ts                         the contract: RestaurantConfig (+ Img, Theme, Action, MenuItem, …)
-  helpers.ts                       authoring helpers: mapLinks, phoneAction, directionsAction, pos, contain
+  helpers.ts                       authoring helpers: mapLinks, phoneAction, whatsappAction, directionsAction, pos, contain
   active.ts                        ONE-LINE import selecting the restaurant (not a registry; see §10)
   nooms/                           Nooms Foods
     brand.ts                         identity · contact · hours · social · actions · THEME · SEO · footer
     images.ts  fonts.ts              image library (size+alt) · next/font loaders
     home.ts menu.ts story.ts gallery.ts journal.ts contact-page.ts
     index.ts                         assembles RestaurantConfig
+  jumma-gujjar/                    Jumma Gujjar Nihari (same files + fonts/ (subset Urdu face) + assets-manifest.md; no journal)
   example-burger-house/            the starter (same shape; no journal; placeholder assets)
 
 public/restaurants/<slug>/       that restaurant's assets only (logo/ food/ storefront/ boards/ seo/ …)
@@ -67,6 +72,7 @@ app/                             routes + layout + globals.css  (reads the activ
 components/                      SHARED, prop-driven (see §6)
 lib/                             restaurant.ts (resolvers) · seo.ts (metadata/theme/JSON-LD) · utils.ts
 scripts/new-restaurant.mjs       scaffold + activate a new restaurant
+scripts/subset-font.py           subset a font to the characters a restaurant's config uses (used for the Urdu face)
 ```
 
 ## 4. The config contract (`restaurants/types.ts`)
@@ -76,11 +82,12 @@ RestaurantConfig = {
   identity   // name, slug, tagline, motto?, description, cuisine[], services[], priceNote?, logo{mark, badge?}
   contact    // phone{display,e164,note?}, email?, address{area,lines,street,short,city,country,countryCode,plusCode?,mapQuery}, hours
   social     // [{platform: instagram|facebook|tiktok|youtube|x|whatsapp, href, handle?}]
-  theme      // {mode:"dark"|"light", colors: ThemeColors, fonts:{display,body,displayVariation?,articleVariation?}}
-  actions    // {order: Action, visit: Action}  ← the two conversion actions (call+Maps  OR  ordering/booking platforms)
+  theme      // {mode, ambient?: "stars"|"embers"|"none", colors: ThemeColors, fonts:{display,body,urdu?,label?,displayVariation?,articleVariation?}}
+  actions    // {order: Action, visit: Action, primary?: "order"|"visit"}  ← the two conversion actions (call+Maps OR WhatsApp OR platforms); `primary` = the solid header pill
+  identity   // …also nameUrdu? (Nastaliq name shown above the hero title and in the footer)
   seo        // siteUrl?, defaultTitle, titleTemplate, description, keywords?, locale, ogImage, icons{favicon,icon,apple}, pages{…}
   footer     // {headline: Rich, blurb}
-  home       // hero, intro, dishes, ribbon, cuisine, kitchen, featured, stats, place, follow, split
+  home       // hero(+chip?), intro, dishes, ribbon, cuisine, kitchen(+beats?), featured, stats, place, follow, split, reels?  ← reels = optional promo-video showcase
   menu       // hero, notice?, navAction?, categories[], items[], cta
   story      // hero, sections[] (media: circle|duo|print), ribbon[], cta
   gallery    // hero, items[], followSuffix, cta
@@ -95,15 +102,25 @@ RestaurantConfig = {
 - **`Hours`**: `headline`, `short`, `note?`, optional `schedule[]` (weekly table; machine fields feed JSON-LD `openingHoursSpecification`).
 - **Buttons**: configs reference `"order" | "visit" | "menu"` or a custom `Action`; `resolveButtons()` turns them into
   labelled, styled buttons (first = primary, rest = outline; per-button `variant`/`label` overrides).
-- **Optional ⇒ graceful**: `journal`, `contact.email`, `hours.schedule`, `identity.motto`, `home.intro.sticker`,
-  `home.featured.cards` (falls back to menu items with `featured:true`+`image`), `menu.notice/navAction`, extra socials.
+- **Optional ⇒ graceful**: `journal`, `home.reels`, `contact.email`, `hours.schedule`, `identity.motto/nameUrdu`, `home.intro.sticker`, `home.hero.chip`, `home.kitchen.beats`,
+  `home.featured.cards` (falls back to menu items with `featured:true`+`image`), `menu.notice/navAction`, `theme.ambient/fonts.urdu/fonts.label`, extra socials.
+- **Urdu**: `identity.nameUrdu`, `MenuCategory.labelUrdu`, `MenuItem.nameUrdu`, `FeaturedCard.titleUrdu`, rendered by `<Urdu>` (`lang="ur" dir="rtl"`, `.urdu` class, line-height 2.1).
+  A category with **no `image`/`photos`** renders a typographic plate (`CategoryGlyph`: its Urdu/English name set large) instead of a photo: use that rather than stock imagery.
 
 ### Menu data (flat, typed)
 ```ts
-categories: [{ id, label, heading, tagline, blurb, image /*home tile*/, photos: [Img, Img?] /*menu-page prints*/ }]
-items:      [{ id, category /*category.id*/, name, description?, price?: "$9", tags?: ["V"|"VG"], image?, featured?, featuredTag? }]
+categories: [{ id, label, labelUrdu?, heading, tagline, blurb, image? /*home tile*/, photos?: [Img, Img?] /*menu-page prints*/ }]
+items:      [{ id, category /*category.id*/, name, nameUrdu?, description?, price?: "Rs 850", badge?: "Signature", tags?: ["V"|"VG"], image?, featured?, featuredTag? }]
 ```
-`MenuSection`, `MenuCategoryNav`, `CuisineGrid` tiles and `FeaturedItems` all render from this. `price` omitted ⇒ nothing shown.
+`MenuSection`, `MenuCategoryNav`, `CuisineGrid` tiles and `FeaturedItems` all render from this. `price` omitted ⇒ nothing shown; a price with a leading integer ("Rs 1,200", "from Rs 750") counts up
+when it scrolls into view (`PriceTag`). `badge` is a small red pill: only for claims the owner confirmed.
+
+### Promo reels (`home.reels`, optional)
+```ts
+reels: { eyebrow, title, lead, marquee?: string[], soundHint?, items: ReelItem[], youtube?: { id, eyebrow, title, blurb?, credit } }
+ReelItem = { id, kicker, title, caption?, video: { src, type?, poster: Img }, duration?, credit?: { label, href? } }
+```
+Portrait (9:16) clips. **Always credit footage that isn't the restaurant's own.** Omit `home.reels` and the section disappears (the example restaurant has none).
 
 ## 5. Theme architecture
 
@@ -117,7 +134,7 @@ Components never name a colour; they use **semantic roles**. Per restaurant: `th
 | `primary` · `on-primary` | brand **fills** (buttons, pills, icon circles) and the text on them |
 | **`accent`** | brand colour for **text, icons, rules, eyebrows**. = `primary`, or `primaryOnDeep` on dark photo sections |
 | `primary-soft` | italic heading words, hover fills. = `primarySoft`, or `primarySoftOnDeep` on dark sections |
-| `secondary` | used sparingly (one low glow in the "kitchen" section) |
+| `secondary` | used sparingly: one low glow in the "kitchen" section, the reels backdrop, and the red menu **badge** fills (cream text on it must clear 4.5:1) |
 | `deep` · `on-deep` | header, menu overlay, footer, scrims over photos · the light text/frames on them |
 
 - **`.scope-deep`** (on header, overlay, footer, Hero, PageHero, CTABanner, KitchenMoment, FollowBand, NotFound) remaps
@@ -125,14 +142,18 @@ Components never name a colour; they use **semantic roles**. Per restaurant: `th
   correctly on dark and light themes**. Inside it, components still just use `text-foreground`, `border-foreground/15`, etc.
 - `theme.mode` sets `data-theme` + `colorScheme`; `--hero-fade` (where scrims fade to) is the page bg on dark themes, `deep` on light.
 - `:root` in globals.css holds **neutral fallback** values only (never brand colours).
-- **Fonts**: each restaurant's `fonts.ts` calls `next/font/google` (must be literal, module-scope) with variable names
-  **`--font-display-face`** / **`--font-body-face`**; `theme.fonts.displayVariation` → `--display-variation`
-  (Nooms: Fraunces `"SOFT" 100, "WONK" 0`); `articleVariation` → article headings/quotes.
+- **Fonts**: each restaurant's `fonts.ts` calls `next/font/google` (or `next/font/local`; must be literal, module-scope) with variable names
+  **`--font-display-face`** / **`--font-body-face`**, plus optional **`--font-urdu-face`** (`theme.fonts.urdu`, used by `.urdu`) and **`--font-label-face`** (`theme.fonts.label`).
+  `theme.fonts.displayVariation` → `--display-variation` (Nooms: Fraunces `"SOFT" 100, "WONK" 0`); `articleVariation` → article headings/quotes.
+  **Label voice**: `.eyebrow`, `.btn` and every `.uppercase` element (except `.display`) use `--font-label` (falls back to the body face, so themes without one are unchanged) with
+  `font-synthesis-weight: none` so single-weight faces such as Bebas Neue are never faux-bolded.
+- **Ambient layer** (`theme.ambient`, default `"stars"` on dark / `"none"` on light): `StarField` (twinkling stars) or `Embers` (slow rising sparks: fire/ghee/smoke brands). Both are one fixed z-0 canvas.
 - Shared CSS classes (in `globals.css`): `.display` `.h-hero/.h-page/.h-section/.h-card` `.accent-italic` `.eyebrow` `.lead`
   `.btn(.btn-primary/.btn-outline/.btn-sm)` `.scrim-hero/.scrim-band/.scrim-side` `.glow-primary/.glow-secondary`
   `.ribbon-gradient` `.zoom-img` `.marquee` `.reveal` `.hero-rise` `.nav-overlay` `.prose-article` `.scope-deep`
   · behaviour classes from the UI spec: `.site-header(.scrolled)` `.brand-logo` `.starfield` `.section-tint` `.region-row/.region/.region__img`
-  `.masonry/.masonry__cell/.masonry__item` `.dish-card/.dish-card__img/.dish-card__badge/.dish-card__body`.
+  `.masonry/.masonry__cell/.masonry__item` `.dish-card/.dish-card__img/.dish-card__badge/.dish-card__body`
+  · rebrand layer: `.urdu/.urdu-hero` `.embers(--local)` `.glyph-plate` `.footer-mark` `.reels-bg` `.outline-word` `.reel-*` `.ring-text/.ring-spin` `.yt-*`.
 - **Easing tokens**: `--ease` = `cubic-bezier(.22,.61,.36,1)` (snappy ease-out, almost everything) and `--ease-io` = `cubic-bezier(.65,.05,.36,1)`
   (clip-path reveals: menu overlay, eyebrow dash). `--accent-grad` is the gradient used by accent words, derived from the theme tokens.
 
@@ -141,6 +162,9 @@ foreground `#faf3e3`, primary (sign yellow) `#ffc91f`, primary-soft `#ffe48a`, o
 deep `#050505`, on-deep `#faf3e3`. Fonts: **Fraunces** (display, italics) + **Figtree** (body).
 **Example palette** (light): bg `#fff`, primary `#c8102e`, primaryOnDeep `#ff5468`, primarySoft `#a50d26`, primarySoftOnDeep `#ff8c9a`,
 deep `#1a0a0c`; fonts Playfair Display + Inter.
+**Jumma Gujjar palette** (dark ember; the gold and red are **sampled from the supplied logo**, the brief's proposed values were placeholders): background `#14100e`, surface `#1e1815`, surface-raised `#2a211c`,
+foreground (cream) `#fff3dc`, primary (logo yellow) `#ffca08`, primary-soft `#ffe270`, on-primary `#14100e`, secondary (logo red, deepened from `#ea1a23` for cream-text contrast) `#d61a21`, deep `#0b0807`, on-deep `#fff3dc`.
+Fonts: **Fraunces** (display, weight axis only) + **DM Sans** (body) + **Bebas Neue** (labels) + **Noto Nastaliq Urdu** 500 (Urdu; a local **subset** file). `ambient: "embers"`.
 
 ## 6. Component architecture
 
@@ -150,17 +174,18 @@ Data flow: `restaurants/<slug>` → `restaurants/active.ts` → **`app/**` pages
 |---|---|
 | **layout/** | `Header` (client: sticky 3-zone bar, full-screen numbered nav overlay, focus trap, ESC, scroll lock; props: name, logo, links, order, visit, locationLine) · `Footer` (takes `restaurant` + links) |
 | **ui/** primitives | `PillButton` `ActionButtons` `Eyebrow` `SectionHeading` `RichText` `Icons`/`Icon` `Reveal` `CountUp` `Marquee` `KeywordRibbon` `Backdrop` `PhotoCard` `PageHero` `Breadcrumb` `CTABanner` `ImageTextSection` `HoursBlock` |
-| **ui/** behaviour (client) | `StarField` (fixed twinkling canvas, dark themes only) · `Parallax` (hero media drift) · `HeroVideo` (optional footage) · `TiltCard` (3D mouse-follow tilt) · `Reveal` · `CountUp` |
-| **home/** sections | `Hero` `BrandIntro` `DishMarquee` `KeywordRibbon` `CuisineGrid` (flex-grow hover row) `KitchenMoment` `FeaturedItems` (12-col dish cards + tilt) `StatBand` `TheRoom` `FollowBand` `SplitConversion` |
+| **ui/** behaviour (client) | `StarField` (fixed twinkling canvas) · `Embers` (rising-sparks canvas: global, or `contained` with `ember-burst` events) · `Parallax` (hero media drift) · `HeroVideo` (optional footage) · `TiltCard` (3D mouse-follow tilt) · `Reveal` · `CountUp` · `ReelStage` (3D coverflow video player) · `YouTubeFacade` (click-to-load embed) |
+| **ui/** rebrand layer | `Urdu` (lang/dir/font) · `CategoryGlyph` (typographic plate) · `PriceTag` (price count-in) · `RingText` (SVG text on a circle) · `canvas-color` (`toRgb` helper for canvases) |
+| **home/** sections | `Hero` `BrandIntro` `DishMarquee` `KeywordRibbon` `CuisineGrid` (flex-grow hover row) `KitchenMoment` `FeaturedItems` (12-col dish cards + tilt) **`PromoReels`** (optional) `StatBand` `TheRoom` `FollowBand` `SplitConversion` |
 | **menu/** | `MenuCategoryNav` (client: sticky pills + IntersectionObserver scroll-spy) · `MenuSection` |
 | others | `story/StoryMedia` · `gallery/GalleryGrid` (masonry hover) · `journal/ArticleCard` · `contact/ContactInfoCard`, `MapEmbed` |
 
-`lib/restaurant.ts`: `navLinks` (Journal only if `journal`), `resolveButtons`, `ctaProps`, `featuredCards`, `socialLabel`, `siteUrl`
+`Header` also takes `primary` (which pill is solid). `lib/restaurant.ts`: `navLinks` (Journal only if `journal`), `resolveButtons`, `ctaProps`, `featuredCards`, `socialLabel`, `siteUrl`
 (env `NEXT_PUBLIC_SITE_URL` → `seo.siteUrl` → Vercel → localhost). `lib/seo.ts`: `rootMetadata`, `rootViewport`, `pageMetadata`,
 `themeStyle`, `restaurantJsonLd`. `lib/utils.ts`: `container` (`max-w-page` 1600px, gutters 5/8/14), `sectionY`, `heroDelay`.
 
 **Pages**: `/` · `/menu` · `/story` · `/gallery` · `/journal` · `/journal/[slug]` · `/contact` · 404 · `sitemap.xml` · `robots.txt`.
-**Home section order**: Hero → BrandIntro → DishMarquee → KeywordRibbon → CuisineGrid → KitchenMoment → FeaturedItems → StatBand → TheRoom
+**Home section order**: Hero → BrandIntro → DishMarquee → KeywordRibbon → CuisineGrid → KitchenMoment → FeaturedItems → **PromoReels (if `home.reels`)** → StatBand → TheRoom
 → FollowBand → SplitConversion → Footer. Every interior page = PageHero → content → CTABanner → Footer.
 
 ## 7. Design language (adapted from qissa.co.uk; see `NOOMS_FOODS_DESIGN_BRIEF.md`)
@@ -190,6 +215,13 @@ Data flow: `restaurants/<slug>` → `restaurants/active.ts` → **`app/**` pages
   when built from menu items; editorial cards link only if `href` is set.
 - **Type & reveal (spec §6/appendix)**: eyebrow `.72rem / 600 / .34em` with a 26px dash that wipes in (clip-path, `--ease-io`); H2 `clamp(2rem,4.6vw,3.6rem)`; accent words are **gradient text**
   (`--accent-grad`); `.reveal` = 34px rise, 1s, `--ease`, siblings staggered in 0.08s steps capped at 4 (`stagger()` in `lib/utils.ts`).
+- **Promo reels (`PromoReels` → `ReelStage`)**: portrait clips on a **3D coverflow**. Each card carries `--o` (offset from the active card) and `--d`; CSS derives translate/rotateY (±30°)/scale/opacity from them.
+  The centre reel autoplays **muted, inline** while the stage is on screen and ends → next (story-style progress segments); the others sit on their poster (`preload="none"`; posters are requested only
+  when the stage is within a screen of view). Click a side card, swipe/drag, arrow keys, Home/End, prev/next or segments change reel; each change fires an `ember-burst` the section's `Embers` canvas
+  answers with sparks. Cards "deal" out from a stack on first sight (`data-dealt` fresh → done); the scene tilts up into place with scroll (`--sp`); the active card has a spinning conic glow halo,
+  a mouse-follow tilt (flattened while over a button, otherwise controls slide away) + specular glare. **Sound is opt-in**: the spinning-text ring button unmutes (a user gesture); a fullscreen button
+  expands the frame. Focus is kept alive across changes (only the active card renders controls). Cards are deliberately **not `preserve-3d` inside**: the tilting frame would slice through its own halo.
+  Giant outlined words drift behind on two CSS marquees. Reduced motion: no autoplay/deal-in/tilt/spin; play is one tap away. Under it, an optional **click-to-load YouTube** facade (youtube-nocookie, nothing loads until clicked).
 - **Other motion** (transform/opacity only, `prefers-reduced-motion` respected everywhere, `@media (scripting: none)` fallback shows content): hero entrance (`.hero-rise`), CSS-only marquees
   (60s dish loop, pause on hover), stat count-up (~2s ease-out, final value server-rendered), button hover/press.
 - **Menu page**: sticky pill bar with scroll-spy + smooth scroll, per-category prints + heading/rule/italic tagline + 1- or 2-column items.
@@ -235,6 +267,14 @@ Data flow: `restaurants/<slug>` → `restaurants/active.ts` → **`app/**` pages
   our photos are tiny, so the full-bleed signature cards are inherently soft (the hover/tilt effects are what the spec asks for).
 - **Starfield is dark-theme only** (cream dots on white would read as dust); the old static `.dots` texture was removed.
 - **Header height is derived** (logo + padding), not fixed, so the shrink animates with two transitions exactly as in the spec.
+- **Jumma Gujjar rebrand decisions**: colours **sampled from the logo**, not the brief's placeholders; `ambient: "embers"` instead of stars; **no stock photos**, categories without a photo become typographic
+  plates; the brief's "Fan favourite" badge left off (no verified ranking); lassi has no price; no founding year, no "own dairy farm" claim; hours show "Message or call for today's timings" (the Foodpanda hours
+  belong to a Korangi address). WhatsApp is the primary action (`actions.primary: "order"`). Stills for gallery/hero prints are cropped from the owner's own clips **above** TikTok's watermark band; the third-party clip is
+  credited and left uncropped.
+- **Fonts kept lean for performance** (Lighthouse mobile ≥85 was a brief requirement): Fraunces loads the weight axis only (79 KB vs 263 KB with SOFT/WONK/opsz), Noto Nastaliq Urdu is a **61 KB subset**
+  (`scripts/subset-font.py`; 160 KB for the full Arabic block) and stays preloaded (un-preloading it made first paint *later*). Backdrops request small images (`sizes` ~55vw) because they are always blurred.
+  Lighthouse's simulated LCP tracks bytes requested on first load, so trim bytes before micro-tuning.
+- **Footer watermark is a pseudo-element** (`.footer-mark::before { content: attr(data-mark) }`) so the decorative text isn't scanned by contrast audits or read by screen readers.
 - `ImageTextSection`, `Marquee`, etc. expect items to carry their own end-spacing (margin), not `gap`, so marquee loops are seamless.
 
 ## 11. Tooling & gotchas
@@ -244,7 +284,10 @@ Data flow: `restaurants/<slug>` → `restaurants/active.ts` → **`app/**` pages
   route `params` are **Promises**; `PageProps<"/x/[slug]">` / `LayoutProps<"/">` are global helpers; `inert` is a supported prop; Turbopack is default.
 - `next.config.ts` pins `turbopack.root` to this folder (a stray `package-lock.json` in the parent dir confuses root detection).
 - `next/font/google` needs network at build time; loader options must be literals at module scope.
-- **Two `next dev` servers can't share one project directory** (second refuses to start). Use separate copies/ports or run sequentially.
+- **Two `next dev` servers can't share one project directory** (second refuses to start). Use separate copies/ports or run sequentially. The owner often has `next dev` running on :3000 already:
+  check `lsof -nP -iTCP:3000 -sTCP:LISTEN` and **reuse it** (HMR picks edits up) rather than killing it. Next 16 writes dev output to `.next/dev`, so `next build` / `next start` on another port is safe alongside it.
+  To build a *different* restaurant without touching `active.ts` (which would hot-swap the owner's dev site), copy the repo (`rsync` excluding node_modules/.next, `cp -Rc node_modules`) and edit `active.ts` in the copy.
+- `next/font/local` works for a bundled subset file (path relative to `fonts.ts`); `next/font/google` can't take a `text=` subset.
 - zsh doesn't word-split unquoted variables and globs unquoted `--include=*.ts`: quote patterns in shell loops/greps.
 - Client components with effects: avoid synchronous `setState` in effects (React-compiler lint). Header derives "overlay open" from `pathname` so navigation closes it without an effect.
 - `CountUp` and `Reveal` mutate the DOM directly (no React state) so scroll/animation never re-renders.
@@ -262,7 +305,11 @@ Data flow: `restaurants/<slug>` → `restaurants/active.ts` → **`app/**` pages
 5. **UI behaviour**: measure each spec'd behaviour in headless Chrome (header 136→91px and logo 92→66px at the 60px threshold, 0.5s/`--ease`; star canvas fixed z-0 with animating pixels;
    parallax = formula; reveal 34px/1s; eyebrow/H2 metrics; cuisine flex-grow/opacity/filter + no row jump + image widens; 12-col card widths; tilt transform ≤±7°; gallery hover; overlay circle
    0%→150% from the hamburger; reduced-motion and touch fallbacks). Last result: 45/45.
-6. **Prove genericity**: point `active.ts` at `example-burger-house`, confirm zero Nooms strings/assets/colours in rendered HTML and that optional features (journal) disappear cleanly.
+6. **Prove genericity**: build `example-burger-house` (in a copy, see §11), confirm zero Nooms/Jumma strings/assets/colours in rendered HTML, no reels section, no ambient canvas, and that optional features disappear cleanly.
+7. **Reels** (Jumma): deal-in, `--o` offsets, only the active reel plays, muted by default, side-click/arrow/Home/segment/swipe navigation, sound + pause + fullscreen controls, `ember-burst`, tilt vars,
+   clip-end hand-over, YouTube facade → nocookie iframe, reduced motion (no autoplay), mobile touch swipe and no overflow. Last result: 43/43.
+8. **Lighthouse (mobile, production build via `next start`)**: `npx lighthouse@12 <url> --chrome-flags="--headless=new" --only-categories=performance,accessibility,best-practices,seo`.
+   Last result: home 85–88, inner pages 89–93 perf; 100/100/100 elsewhere. Run 2–3 times (±3 points of noise).
 
 ## 13. Common tasks
 
@@ -277,9 +324,11 @@ Data flow: `restaurants/<slug>` → `restaurants/active.ts` → **`app/**` pages
 ## 14. Known limits / backlog
 
 - Section order/structure is fixed by design; restaurants vary by data, theme, fonts and optional features.
-- Shared UI strings are English ("Skip to content", "Explore", "Get directions", 404 copy); no i18n/RTL.
+- Shared UI strings are English ("Skip to content", "Explore", "Get directions", "Watch with sound", 404 copy). **Urdu names/labels are supported inline, but there is no full-site Urdu/RTL mode** (the brief lists it as an optional later switch).
+- Reel videos have no captions track (the clips are mixed speech/music); sound is opt-in and the visuals carry the content.
 - Display-font weights/tracking in `globals.css` are tuned for a serif; a very different face may need tuning.
 - No contact-form backend; no review carousel (component intentionally not built until real reviews exist; `FollowBand` holds the slot).
 - Light theme verified with one palette only (the example); example mobile layout checked by overflow tests, not full visual review.
 - `package.json` name is still `nooms-foods`. Rename when the template branch is cut.
-- Nothing is committed (the project folder is untracked inside a larger git repo); the owner decides branching.
+- Branching: `jumma-gujjar` was cut before the Qissa behaviour work landed on `main`, so `main` was merged in (`git merge --no-commit`, **left uncommitted for the owner**). The Jumma work itself is also uncommitted.
+- Jumma open items live in `restaurants/jumma-gujjar/assets-manifest.md` (more photos, a clean tarka clip, permission for the third-party TikTok clip, whether the tin pack is real, the TikTok handle, and the brief's `[CONFIRM]` list).

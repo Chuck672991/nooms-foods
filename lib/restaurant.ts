@@ -99,6 +99,7 @@ export function featuredCards(r: RestaurantConfig): FeaturedCard[] {
     .map((item) => ({
       tag: item.featuredTag ?? labels.get(item.category) ?? "",
       title: item.name,
+      titleUrdu: item.nameUrdu,
       description: [item.description, item.price].filter(Boolean).join(" · "),
       image: item.image,
       href: `/menu#${item.category}`,

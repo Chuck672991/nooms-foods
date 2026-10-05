@@ -1,5 +1,5 @@
 import type { HomeContent } from "@/restaurants/types";
-import { container } from "@/lib/utils";
+import { container, stagger } from "@/lib/utils";
 import { Backdrop } from "@/components/ui/Backdrop";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { PhotoCard } from "@/components/ui/PhotoCard";
@@ -21,6 +21,18 @@ export function KitchenMoment({ content }: { content: HomeContent["kitchen"] }) 
             <RichText text={content.title} />
           </h2>
           <p className="lead mt-8 max-w-lg text-pretty">{content.body}</p>
+          {content.beats?.length ? (
+            <ol className="mt-10 max-w-lg space-y-6">
+              {content.beats.map((beat, i) => (
+                <Reveal as="li" key={beat} delay={stagger(i)} className="flex items-baseline gap-5">
+                  <span className="display w-10 shrink-0 text-3xl leading-none text-accent tabular-nums">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="text-[1.05rem] leading-relaxed text-foreground/85 text-pretty">{beat}</span>
+                </Reveal>
+              ))}
+            </ol>
+          ) : null}
         </Reveal>
 
         <Reveal variant="image" delay={150} className="mx-auto w-full max-w-md lg:ml-auto">

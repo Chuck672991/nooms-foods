@@ -3,9 +3,11 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import type { HomeContent, MenuCategory } from "@/restaurants/types";
 import { container, sectionY, stagger } from "@/lib/utils";
+import { CategoryGlyph } from "@/components/ui/CategoryGlyph";
 import { ArrowRight } from "@/components/ui/Icons";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { Urdu } from "@/components/ui/Urdu";
 
 /**
  * Category tiles that deep-link into the matching menu section. On large
@@ -35,18 +37,25 @@ export function CuisineGrid({
               <Reveal delay={stagger(i)}>
                 <Link href={`/menu#${cat.id}`} className="block">
                   <div className="region__img relative aspect-[4/5] overflow-hidden rounded-card border border-foreground/10 bg-surface-raised lg:aspect-auto">
-                    <Image
-                      src={cat.image.src}
-                      alt={cat.image.alt}
-                      fill
-                      sizes="(min-width: 1024px) 25vw, (min-width: 640px) 30vw, 46vw"
-                      className={cat.image.fit === "contain" ? "bg-white object-contain p-2" : "object-cover"}
-                      style={{ objectPosition: cat.image.position }}
-                    />
+                    {cat.image ? (
+                      <Image
+                        src={cat.image.src}
+                        alt={cat.image.alt}
+                        fill
+                        sizes="(min-width: 1024px) 25vw, (min-width: 640px) 30vw, 46vw"
+                        className={cat.image.fit === "contain" ? "bg-white object-contain p-2" : "object-cover"}
+                        style={{ objectPosition: cat.image.position }}
+                      />
+                    ) : (
+                      <CategoryGlyph label={cat.label} labelUrdu={cat.labelUrdu} className="absolute inset-0" />
+                    )}
                   </div>
                   <p className="display mt-4 text-center text-[clamp(1.15rem,1.7vw,1.5rem)] leading-tight font-[560] text-balance">
                     {cat.label}
                   </p>
+                  {cat.image && cat.labelUrdu ? (
+                    <Urdu className="block text-center text-[1.05rem] leading-[1.9] text-accent">{cat.labelUrdu}</Urdu>
+                  ) : null}
                 </Link>
               </Reveal>
             </li>

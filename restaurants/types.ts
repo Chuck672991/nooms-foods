@@ -83,7 +83,20 @@ export type Theme = {
     displayVariation?: string;
     /** Optional override for headings and pull-quotes inside journal articles (defaults to `displayVariation`). */
     articleVariation?: string;
+    /** Optional Urdu/Arabic-script face for `<Urdu>` text (variable name must be "--font-urdu-face"). */
+    urdu?: FontRef;
+    /**
+     * Optional face for uppercase labels: eyebrows, buttons, nav pills, stat captions
+     * (variable name must be "--font-label-face"). Falls back to `body`.
+     */
+    label?: FontRef;
   };
+  /**
+   * The living background layer behind the page. Default: "stars" on dark
+   * themes, nothing on light ones. "embers" = slow rising sparks (warm, fire/
+   * smoke brands); "none" = a still page.
+   */
+  ambient?: "stars" | "embers" | "none";
 };
 
 // ───────────────────────────── Actions & buttons ─────────────────────────────
@@ -130,7 +143,8 @@ export type IconName =
   | "x"
   | "whatsapp"
   | "messenger"
-  | "mail";
+  | "mail"
+  | "bag";
 
 // ───────────────────────────── Identity & contact ─────────────────────────────
 
@@ -184,6 +198,8 @@ export type Address = {
 
 export type Identity = {
   name: string;
+  /** Optional name in Urdu (Nastaliq) script: shown above the hero title and in the footer. */
+  nameUrdu?: string;
   /** URL-safe id, matches the folder name under /restaurants and /public/restaurants. */
   slug: string;
   /** Short brand line, e.g. the hero eyebrow. */
@@ -286,6 +302,8 @@ export type FeaturedCard = {
   /** Small pill over the photo, e.g. "BURGERS". */
   tag: string;
   title: string;
+  /** Optional Urdu rendering of the title, shown under it. */
+  titleUrdu?: string;
   description: string;
   image: Img;
   /** Makes the whole card a link (e.g. "/menu#burgers"). Derived automatically for menu-based cards. */
@@ -314,6 +332,8 @@ export type HomeContent = {
     cards: [Img, Img];
     scrollCue: string;
     buttons: ButtonRef[];
+    /** Small location pill under the buttons, e.g. "Liaquatabad, Karachi". */
+    chip?: string;
   };
   intro: {
     eyebrow: string;
@@ -343,6 +363,8 @@ export type HomeContent = {
     eyebrow: string;
     title: Rich;
     body: string;
+    /** Optional short numbered beats shown under the body (e.g. the three steps of a signature dish). */
+    beats?: string[];
     backdrop: Img;
     card: { image: Img; caption?: string };
   };
@@ -367,6 +389,44 @@ export type HomeContent = {
   };
   follow: { eyebrow: string; title: Rich; lead: string; backdrop: Img };
   split: { eyebrow: string; title: Rich; cards: [SplitCard, SplitCard] };
+  /** OPTIONAL: the promo-reels showcase. Omit and the section disappears. */
+  reels?: ReelsContent;
+};
+
+// ───────────────────────────── Promo reels ─────────────────────────────
+
+export type ReelItem = {
+  id: string;
+  /** Short label above the title, e.g. "The tarka". */
+  kicker: string;
+  title: string;
+  /** One line under the title. */
+  caption?: string;
+  /** Portrait (9:16) clip. Keep files light: they are streamed on demand. */
+  video: { src: string; type?: string; poster: Img };
+  /** Shown on the card, e.g. "0:53". */
+  duration?: string;
+  /** Whose footage it is. Always credit footage that is not the restaurant's own. */
+  credit?: { label: string; href?: string };
+};
+
+export type ReelsContent = {
+  eyebrow: string;
+  title: Rich;
+  lead: string;
+  /** Giant outlined words drifting behind the stage. */
+  marquee?: string[];
+  /** Ring text on the sound button, e.g. "Watch with sound". */
+  soundHint?: string;
+  items: ReelItem[];
+  /** Optional official YouTube embed (click-to-load) shown under the stage. */
+  youtube?: {
+    id: string;
+    eyebrow: string;
+    title: string;
+    credit: { label: string; href?: string };
+    blurb?: string;
+  };
 };
 
 // ───────────────────────────── Menu ─────────────────────────────
@@ -376,13 +436,15 @@ export type MenuCategory = {
   /** Short label for pills and tiles. */
   label: string;
   heading: string;
+  /** Optional Urdu label (Nastaliq). Also the artwork when a category has no photo. */
+  labelUrdu?: string;
   /** Italic line beside the heading. */
   tagline: string;
   blurb: string;
-  /** Tile image on the homepage grid. */
-  image: Img;
-  /** Photo prints beside the category on the menu page (1 or 2). */
-  photos: Img[];
+  /** Tile image on the homepage grid. Omit and the tile becomes a typographic one. */
+  image?: Img;
+  /** Photo prints beside the category on the menu page (1 or 2). Omit for a typographic plate. */
+  photos?: Img[];
 };
 
 export type MenuItem = {
@@ -390,7 +452,11 @@ export type MenuItem = {
   /** `MenuCategory.id` this item belongs to. */
   category: string;
   name: string;
+  /** Optional Urdu name (Nastaliq). */
+  nameUrdu?: string;
   description?: string;
+  /** Small red pill beside the name, e.g. "Signature". Only for claims the owner confirmed. */
+  badge?: string;
   /** Preformatted, e.g. "PKR 450". Omit until verified. */
   price?: string;
   /** Dietary pills. */
@@ -502,8 +568,11 @@ export type RestaurantConfig = {
   contact: Contact;
   social: SocialLink[];
   theme: Theme;
-  /** The two conversion actions every page offers. */
-  actions: { order: Action; visit: Action };
+  /**
+   * The two conversion actions every page offers. `primary` picks which one is
+   * the solid (primary-colour) pill in the header (default "visit").
+   */
+  actions: { order: Action; visit: Action; primary?: "order" | "visit" };
   seo: Seo;
   footer: FooterContent;
   home: HomeContent;

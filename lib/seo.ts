@@ -110,6 +110,7 @@ export function restaurantJsonLd(r: RestaurantConfig) {
       addressCountry: contact.address.countryCode,
     },
     hasMap: mapLinks(contact.address.mapQuery).open,
+    hasMenu: `${base}/menu`,
     sameAs: social.map((s) => s.href),
     ...(schedule?.length
       ? {
