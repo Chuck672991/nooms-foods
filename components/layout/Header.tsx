@@ -18,6 +18,8 @@ export type HeaderProps = {
   /** The restaurant's two conversion actions. */
   order: Action;
   visit: Action;
+  /** Which action is the solid (primary-colour) pill. Default "visit". */
+  primary?: "order" | "visit";
   /** Small line at the bottom of the menu overlay, e.g. area + hours. */
   locationLine: string;
 };
@@ -48,6 +50,7 @@ function Logo({
         height={logo.height}
         sizes={shrinks ? "(min-width: 768px) 92px, 48px" : "48px"}
         preload
+        fetchPriority="high"
         className={`rounded-[10px] ${shrinks ? "brand-logo" : "h-11 w-11 sm:h-12 sm:w-12"}`}
       />
     </Link>
@@ -58,7 +61,7 @@ function Logo({
  * Sticky 3-zone header (menu left · logo center · Order + Find us right) and
  * the full-screen numbered nav overlay, one shared component at every width.
  */
-export function Header({ name, logo, links, order, visit, locationLine }: HeaderProps) {
+export function Header({ name, logo, links, order, visit, primary = "visit", locationLine }: HeaderProps) {
   const pathname = usePathname();
   // The overlay is "open for" the page it was opened on, so navigating
   // closes it automatically without an effect.
@@ -156,7 +159,7 @@ export function Header({ name, logo, links, order, visit, locationLine }: Header
           <div className="flex items-center gap-1.5 justify-self-end sm:gap-2.5">
             <PillButton
               href={order.href}
-              variant="outline"
+              variant={primary === "order" ? "primary" : "outline"}
               size="sm"
               external={order.external}
               destination={order.destination}
@@ -167,6 +170,7 @@ export function Header({ name, logo, links, order, visit, locationLine }: Header
             </PillButton>
             <PillButton
               href={visit.href}
+              variant={primary === "order" ? "outline" : "primary"}
               size="sm"
               external={visit.external}
               destination={visit.destination}
@@ -243,13 +247,18 @@ export function Header({ name, logo, links, order, visit, locationLine }: Header
           <div className="flex flex-wrap gap-3">
             <PillButton
               href={order.href}
-              variant="outline"
+              variant={primary === "order" ? "primary" : "outline"}
               external={order.external}
               destination={order.destination}
             >
               {order.detail ? `${order.label} · ${order.detail}` : order.label}
             </PillButton>
-            <PillButton href={visit.href} external={visit.external} destination={visit.destination}>
+            <PillButton
+              href={visit.href}
+              variant={primary === "order" ? "outline" : "primary"}
+              external={visit.external}
+              destination={visit.destination}
+            >
               {visit.longLabel ?? visit.label}
             </PillButton>
           </div>

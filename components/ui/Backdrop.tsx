@@ -37,7 +37,8 @@ export function Backdrop({
       src={image.src}
       alt=""
       fill
-      sizes="(max-width: 768px) 100vw, 640px"
+      // Always blurred (20px+), so a fraction of the viewport width is plenty of resolution.
+      sizes="(max-width: 768px) 55vw, 480px"
       quality={60}
       preload={priority}
       // 1.157 × the parallax layer's 1.08 = the same 1.25 crop that hides blur edges.

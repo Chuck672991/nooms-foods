@@ -20,7 +20,7 @@ export function FollowBand({
   social: SocialLink[];
 }) {
   return (
-    <section className="scope-deep relative isolate overflow-hidden py-28 sm:py-40">
+    <section className="cv-section scope-deep relative isolate overflow-hidden py-28 sm:py-40">
       <Backdrop image={content.backdrop} blur={26} opacity={0.5} />
       <div className="scrim-band absolute inset-0 -z-10 [--scrim-a:50%] [--scrim-b:55%]" aria-hidden="true" />
       <div className="mx-auto max-w-3xl px-5 text-center sm:px-8">

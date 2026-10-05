@@ -1,7 +1,10 @@
 # Restaurant website template
 
 One shared website architecture + one restaurant folder = a fully branded restaurant site.
-**Nooms Foods is the first restaurant on the template**; `example-burger-house` is a second,
+**Nooms Foods is the first restaurant on the template** and **Jumma Gujjar Nihari the second**
+(Urdu + English, WhatsApp-first ordering, an ember-lit promo-reels showcase; it is the active
+restaurant on the `jumma-gujjar` branch, see `JummaGujjar_DesignBrief.md` and
+`restaurants/jumma-gujjar/assets-manifest.md`); `example-burger-house` is a third,
 fictional one (red/white light theme, its own fonts, a booking/ordering platform instead of
 phone + maps, a weekly hours table, no Journal) that proves nothing in the shared code is
 Nooms-specific. It is also the starter you copy for the next client.
@@ -24,6 +27,7 @@ restaurants/                      ← EVERYTHING that differs between restaurant
   types.ts                          the contract: RestaurantConfig (your editor lists what's required)
   helpers.ts                        small authoring helpers (map links, phone/directions actions…)
   active.ts                         the ONE line that selects the restaurant
+  jumma-gujjar/                     Jumma Gujjar Nihari (+ fonts/ subset Urdu face, assets-manifest.md)
   nooms/                            Nooms Foods
     brand.ts                          identity · contact · hours · social · actions · THEME · SEO · footer
     images.ts                         every photo/logo with size + alt text
@@ -104,8 +108,21 @@ Any `Rich` string supports `*italic accent*`, `[label](/path or https://… or t
 ## Optional features
 
 Leave a field out and the feature disappears cleanly: `journal` (nav link, routes, sitemap),
-`contact.email`, `hours.schedule` (falls back to the one-line `headline`), `identity.motto`,
-`home.intro.sticker`, `menu.notice`, `menu.navAction`, extra social platforms.
+`home.reels` (the promo-video showcase), `contact.email`, `hours.schedule` (falls back to the
+one-line `headline`), `identity.motto`, `identity.nameUrdu`, `home.intro.sticker`, `home.hero.chip`,
+`home.kitchen.beats`, `menu.notice`, `menu.navAction`, `theme.ambient` (stars by default on dark
+themes; `"embers"` for fire/ghee brands; `"none"`), `theme.fonts.urdu` / `theme.fonts.label`, extra
+social platforms. A menu category with no `image`/`photos` becomes a typographic plate instead of a
+photo, so nothing has to pretend to be that restaurant's food.
+
+**Urdu** (or any right-to-left Nastaliq text): set `nameUrdu` / `labelUrdu` / `titleUrdu`, give the
+theme a `fonts.urdu` face and the text is rendered with `lang="ur" dir="rtl"` and the line-height
+Nastaliq needs. To keep the font small, subset it to the letters the site uses:
+`python3 scripts/subset-font.py <font.woff2> <out.woff2> restaurants/<slug>` (needs `pip install fonttools brotli`).
+
+**Promo reels** (`home.reels`): 2-5 portrait clips on a 3D coverflow with autoplay-muted, opt-in sound,
+swipe/keys, an ember burst on change and an optional click-to-load YouTube embed. Keep clips web-sized,
+add posters, and credit footage that isn't the restaurant's own.
 
 ## Create the next restaurant
 

@@ -1,4 +1,4 @@
-import { nooms } from "./nooms";
+import { jummaGujjar } from "./jumma-gujjar";
 import type { RestaurantConfig } from "./types";
 
 /**
@@ -13,4 +13,4 @@ import type { RestaurantConfig } from "./types";
  * New restaurant:  npm run new-restaurant -- <slug> "<Name>"   (rewrites this file)
  * Switch manually: change the import and the assignment below.
  */
-export const restaurant: RestaurantConfig = nooms;
+export const restaurant: RestaurantConfig = jummaGujjar;

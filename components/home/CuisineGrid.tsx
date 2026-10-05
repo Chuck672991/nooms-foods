@@ -3,9 +3,11 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import type { HomeContent, MenuCategory } from "@/restaurants/types";
 import { container, sectionY, stagger } from "@/lib/utils";
+import { CategoryGlyph } from "@/components/ui/CategoryGlyph";
 import { ArrowRight } from "@/components/ui/Icons";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { Urdu } from "@/components/ui/Urdu";
 
 /**
  * Category tiles that deep-link into the matching menu section. On large
@@ -19,8 +21,9 @@ export function CuisineGrid({
   content: HomeContent["cuisine"];
   categories: MenuCategory[];
 }) {
+  const tiles = categories.filter((c) => c.homeTile !== false);
   return (
-    <section className={`${sectionY} section-tint`}>
+    <section className={`${sectionY} section-tint cv-section`}>
       <div className={container}>
         <Reveal>
           <SectionHeading eyebrow={content.eyebrow} title={content.title} lead={content.lead} />
@@ -28,32 +31,39 @@ export function CuisineGrid({
 
         <ul
           className="region-row mt-16"
-          style={{ "--n": categories.length + 1 } as CSSProperties}
+          style={{ "--n": tiles.length + 1 } as CSSProperties}
         >
-          {categories.map((cat, i) => (
+          {tiles.map((cat, i) => (
             <li key={cat.id} className="region">
               <Reveal delay={stagger(i)}>
                 <Link href={`/menu#${cat.id}`} className="block">
                   <div className="region__img relative aspect-[4/5] overflow-hidden rounded-card border border-foreground/10 bg-surface-raised lg:aspect-auto">
-                    <Image
-                      src={cat.image.src}
-                      alt={cat.image.alt}
-                      fill
-                      sizes="(min-width: 1024px) 25vw, (min-width: 640px) 30vw, 46vw"
-                      className={cat.image.fit === "contain" ? "bg-white object-contain p-2" : "object-cover"}
-                      style={{ objectPosition: cat.image.position }}
-                    />
+                    {cat.image ? (
+                      <Image
+                        src={cat.image.src}
+                        alt={cat.image.alt}
+                        fill
+                        sizes="(min-width: 1024px) 25vw, (min-width: 640px) 30vw, 46vw"
+                        className={cat.image.fit === "contain" ? "bg-white object-contain p-2" : "object-cover"}
+                        style={{ objectPosition: cat.image.position }}
+                      />
+                    ) : (
+                      <CategoryGlyph label={cat.label} labelUrdu={cat.labelUrdu} className="absolute inset-0" />
+                    )}
                   </div>
                   <p className="display mt-4 text-center text-[clamp(1.15rem,1.7vw,1.5rem)] leading-tight font-[560] text-balance">
                     {cat.label}
                   </p>
+                  {cat.image && cat.labelUrdu ? (
+                    <Urdu className="block text-center text-[1.05rem] leading-[1.9] text-accent">{cat.labelUrdu}</Urdu>
+                  ) : null}
                 </Link>
               </Reveal>
             </li>
           ))}
 
           <li className="region">
-            <Reveal delay={stagger(categories.length)}>
+            <Reveal delay={stagger(tiles.length)}>
               <Link
                 href="/menu"
                 className="region__img group flex aspect-[4/5] flex-col items-start justify-between rounded-card border border-primary/60 bg-primary p-5 text-on-primary transition-colors hover:bg-primary-soft lg:aspect-auto"

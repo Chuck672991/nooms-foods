@@ -11,7 +11,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
  */
 export function StatBand({ content }: { content: HomeContent["stats"] }) {
   return (
-    <section className={`${sectionY} section-tint`}>
+    <section className={`${sectionY} section-tint cv-section`}>
       <div className={container}>
         <Reveal>
           <SectionHeading align="center" eyebrow={content.eyebrow} title={content.title} />

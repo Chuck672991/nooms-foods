@@ -27,6 +27,22 @@ export function phoneAction(phone: { display: string; e164: string }): Action {
   };
 }
 
+/** "Order" on WhatsApp with a prefilled message (`number` without "+", e.g. from `e164`). */
+export function whatsappAction(
+  phone: { display: string; e164: string },
+  message: string,
+): Action {
+  return {
+    label: "Order",
+    longLabel: "Order on WhatsApp",
+    href: `https://wa.me/${phone.e164.replace(/\D/g, "")}?text=${encodeURIComponent(message)}`,
+    external: true,
+    destination: "WhatsApp",
+    detail: phone.display,
+    srHint: "on WhatsApp",
+  };
+}
+
 /** "Visit" via Google Maps directions. Swap for a reservation link when one exists. */
 export function directionsAction(directionsHref: string): Action {
   return {

@@ -5,6 +5,7 @@ import type { RestaurantConfig } from "@/restaurants/types";
 import { HoursBlock } from "@/components/ui/Hours";
 import { Icon, MapPin, Phone, Clock } from "@/components/ui/Icons";
 import { RichText } from "@/components/ui/RichText";
+import { Urdu } from "@/components/ui/Urdu";
 import { mapLinks } from "@/restaurants/helpers";
 
 const socialLink =
@@ -18,14 +19,14 @@ export function Footer({ restaurant, links }: { restaurant: RestaurantConfig; li
 
   return (
     <footer className="scope-deep relative isolate overflow-hidden border-t border-foreground/10 bg-deep">
+      {/* Decorative watermark: drawn from a pseudo-element so it is not text for assistive tech or contrast audits. */}
       <p
         aria-hidden="true"
-        className="display pointer-events-none absolute inset-x-0 bottom-0 -z-10 translate-y-[14%] text-center leading-[0.8] font-black tracking-[-0.05em] [word-spacing:0.18em] whitespace-nowrap text-foreground/[0.04] select-none"
+        data-mark={identity.name.toUpperCase()}
+        className="footer-mark display"
         // 13.4vw fits an 11-character name edge to edge; longer names shrink to fit.
         style={{ fontSize: `clamp(2rem, ${Math.min(13.4, (13.4 * 11) / identity.name.length).toFixed(2)}vw, 17rem)` }}
-      >
-        {identity.name.toUpperCase()}
-      </p>
+      />
 
       <div className="mx-auto grid max-w-page gap-12 px-5 pt-20 pb-14 sm:px-8 md:grid-cols-2 lg:grid-cols-[1.4fr_0.8fr_1fr_1.3fr] lg:px-14">
         <div>
@@ -37,7 +38,10 @@ export function Footer({ restaurant, links }: { restaurant: RestaurantConfig; li
             sizes="128px"
             className="h-32 w-32 rounded-2xl bg-white object-contain"
           />
-          <p className="display mt-6 text-2xl leading-tight font-[560]">
+          {identity.nameUrdu ? (
+            <Urdu className="mt-4 block text-left text-[2rem] leading-[1.9] text-accent">{identity.nameUrdu}</Urdu>
+          ) : null}
+          <p className="display mt-4 text-2xl leading-tight font-[560]">
             <RichText text={footer.headline} />
           </p>
           <p className="mt-3 max-w-xs text-sm leading-relaxed text-foreground/65">{footer.blurb}</p>

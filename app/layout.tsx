@@ -1,5 +1,6 @@
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
+import { Embers } from "@/components/ui/Embers";
 import { StarField } from "@/components/ui/StarField";
 import { navLinks } from "@/lib/restaurant";
 import { restaurantJsonLd, rootMetadata, rootViewport, themeStyle } from "@/lib/seo";
@@ -12,12 +13,20 @@ export const viewport = rootViewport(restaurant);
 export default function RootLayout({ children }: LayoutProps<"/">) {
   const { identity, contact, theme, actions } = restaurant;
   const links = navLinks(restaurant);
+  const ambient = theme.ambient ?? (theme.mode === "dark" ? "stars" : "none");
 
   return (
     <html
       lang="en"
       data-theme={theme.mode}
-      className={`${theme.fonts.display.variable} ${theme.fonts.body.variable}`}
+      className={[
+        theme.fonts.display.variable,
+        theme.fonts.body.variable,
+        theme.fonts.urdu?.variable,
+        theme.fonts.label?.variable,
+      ]
+        .filter(Boolean)
+        .join(" ")}
       style={themeStyle(restaurant)}
     >
       <body className="flex min-h-svh flex-col">
@@ -27,14 +36,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           Skip to content
         </a>
-        {/* Dark themes get the live starfield; it sits behind everything (z-0). */}
-        {theme.mode === "dark" ? <StarField /> : null}
+        {/* The living background (behind everything, z-0): stars by default on dark themes, or rising embers. */}
+        {ambient === "embers" ? <Embers /> : ambient === "stars" ? <StarField /> : null}
         <Header
           name={identity.name}
           logo={identity.logo.mark}
           links={links}
           order={actions.order}
           visit={actions.visit}
+          primary={actions.primary}
           locationLine={`${contact.address.area} · ${contact.hours.short}`}
         />
         <main id="main" className="relative z-[1] flex-1">

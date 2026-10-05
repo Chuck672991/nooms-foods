@@ -7,6 +7,7 @@ import { ArrowRight } from "@/components/ui/Icons";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { TiltCard } from "@/components/ui/TiltCard";
+import { Urdu } from "@/components/ui/Urdu";
 
 const SPAN = {
   3: "lg:col-span-3",
@@ -51,6 +52,9 @@ function FeaturedCardView({ item }: { item: FeaturedCard }) {
       </div>
       <div className="dish-card__body">
         <h3 className="display h-card text-balance">{item.title}</h3>
+        {item.titleUrdu ? (
+          <Urdu className="-mt-1 block text-left text-[1.1rem] leading-[1.9] text-accent">{item.titleUrdu}</Urdu>
+        ) : null}
         {item.description ? (
           <p className="mt-2 mb-4 text-[0.85rem] leading-relaxed text-foreground/70 text-pretty">
             {item.description}
@@ -79,7 +83,7 @@ export function FeaturedItems({
   const spans = spansFor(cards.length + 1);
 
   return (
-    <section className={sectionY}>
+    <section className={`${sectionY} cv-section`}>
       <div className={container}>
         <Reveal>
           <SectionHeading eyebrow={content.eyebrow} title={content.title} lead={content.lead} />
