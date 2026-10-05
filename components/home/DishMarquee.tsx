@@ -29,7 +29,7 @@ function Circle({ image, hidden }: { image: Img; hidden?: boolean }) {
 /** Circular plate photos scrolling in a continuous loop. */
 export function DishMarquee({ content }: { content: HomeContent["dishes"] }) {
   return (
-    <section className="overflow-hidden pt-8 pb-24 sm:pb-32">
+    <section className="cv-section overflow-hidden pt-8 pb-24 sm:pb-32">
       <div className={`${container} mb-14 flex flex-wrap items-end justify-between gap-6`}>
         <Reveal>
           <h2 className="display h-section max-w-2xl text-balance">

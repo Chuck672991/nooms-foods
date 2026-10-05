@@ -21,8 +21,9 @@ export function CuisineGrid({
   content: HomeContent["cuisine"];
   categories: MenuCategory[];
 }) {
+  const tiles = categories.filter((c) => c.homeTile !== false);
   return (
-    <section className={`${sectionY} section-tint`}>
+    <section className={`${sectionY} section-tint cv-section`}>
       <div className={container}>
         <Reveal>
           <SectionHeading eyebrow={content.eyebrow} title={content.title} lead={content.lead} />
@@ -30,9 +31,9 @@ export function CuisineGrid({
 
         <ul
           className="region-row mt-16"
-          style={{ "--n": categories.length + 1 } as CSSProperties}
+          style={{ "--n": tiles.length + 1 } as CSSProperties}
         >
-          {categories.map((cat, i) => (
+          {tiles.map((cat, i) => (
             <li key={cat.id} className="region">
               <Reveal delay={stagger(i)}>
                 <Link href={`/menu#${cat.id}`} className="block">
@@ -62,7 +63,7 @@ export function CuisineGrid({
           ))}
 
           <li className="region">
-            <Reveal delay={stagger(categories.length)}>
+            <Reveal delay={stagger(tiles.length)}>
               <Link
                 href="/menu"
                 className="region__img group flex aspect-[4/5] flex-col items-start justify-between rounded-card border border-primary/60 bg-primary p-5 text-on-primary transition-colors hover:bg-primary-soft lg:aspect-auto"

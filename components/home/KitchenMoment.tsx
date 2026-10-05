@@ -9,7 +9,7 @@ import { RichText } from "@/components/ui/RichText";
 /** Immersive full-bleed food moment ("From our kitchen"). */
 export function KitchenMoment({ content }: { content: HomeContent["kitchen"] }) {
   return (
-    <section className="scope-deep relative isolate overflow-hidden py-28 sm:py-36 lg:min-h-[92svh] lg:py-44">
+    <section className="cv-section scope-deep relative isolate overflow-hidden py-28 sm:py-36 lg:min-h-[92svh] lg:py-44">
       <Backdrop image={content.backdrop} blur={22} opacity={0.7} />
       <div className="scrim-side absolute inset-0 -z-10" aria-hidden="true" />
       {/* The secondary brand colour, used once as a low glow. */}

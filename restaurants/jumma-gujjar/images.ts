@@ -68,6 +68,38 @@ export const images = {
     716,
     "A hand holds up stacked tubs of golden desi ghee with Jumma Gujjar Dairy labels",
   ),
+  biryaniPlate: img(
+    "optimized/biryani-plate.jpg",
+    670,
+    1194,
+    "A plate of golden, saffron-coloured biryani lifted from a large steel pot",
+  ),
+  /** Plates only, cropped from the owner-supplied food/gujjar-pulaao.png (a creator's screenshot: face and captions left out). */
+  pulaoPlates: img(
+    "optimized/pulao-plates.jpg",
+    1005,
+    405,
+    "Steel plates of pulao and plain white rice on a table",
+  ),
+  biryaniThali: img(
+    "optimized/biryani-thali.jpg",
+    1152,
+    880,
+    "A steel thali carried to the table with two plates of golden spiced rice and five small bowls of curry",
+  ),
+  lassiPour: img(
+    "optimized/lassi-pour.jpg",
+    1152,
+    1454,
+    "A thick, creamy stream of lassi being poured from a steel jug at the Jumma Gujjar Dairy counter",
+  ),
+  /** PLACEHOLDER (Unsplash, Jason Murphy): replace with the owner's own photo. See assets-manifest.md. */
+  milkBottles: img(
+    "downloaded/milk-bottles.jpg",
+    1400,
+    933,
+    "Placeholder photo: glass bottles of milk in a wicker carrier in warm sunlight",
+  ),
   lassiJug: img(
     "optimized/lassi-jug.jpg",
     576,

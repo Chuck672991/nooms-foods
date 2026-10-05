@@ -37,13 +37,18 @@ export function PromoReels({ content }: { content: ReelsContent }) {
   return (
     <section
       id="reels"
+      data-ember-host
       aria-label={`${content.eyebrow}: promo reels`}
       className="scope-deep reels relative isolate overflow-hidden py-24 sm:py-32 lg:py-40"
     >
       <div className="reels-bg absolute inset-0 -z-20" aria-hidden="true" />
       <div className="glow-secondary absolute inset-0 -z-20" aria-hidden="true" />
       <div className="glow-primary absolute inset-0 -z-20 opacity-60" aria-hidden="true" />
-      <Embers contained className="-z-10" />
+      {/* Sparks only fill the heading + stage zone (not the whole 2000px+ section): a canvas that
+          tall would be cleared and re-composited every frame for nothing. */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[1400px] max-h-full" aria-hidden="true">
+        <Embers contained />
+      </div>
 
       {words.length ? (
         <div className="pointer-events-none absolute inset-x-0 top-[26%] -z-10 select-none" aria-hidden="true">

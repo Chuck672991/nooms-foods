@@ -64,6 +64,9 @@ export function ReelStage({ items, soundHint }: { items: ReelItem[]; soundHint: 
   const paused = pausedChoice ?? reduced;
 
   const stageRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const tiltFrame = useRef(0);
+  const tiltPoint = useRef<{ card: HTMLElement; x: number; y: number } | null>(null);
   const videos = useRef<(HTMLVideoElement | null)[]>([]);
   const frames = useRef<(HTMLDivElement | null)[]>([]);
   const fills = useRef<(HTMLSpanElement | null)[]>([]);
@@ -102,18 +105,25 @@ export function ReelStage({ items, soundHint }: { items: ReelItem[]; soundHint: 
     [active, n, burst],
   );
 
-  // Scroll-linked entrance: `--sp` runs 0 → 1 as the stage rises into the viewport.
+  // Scroll-linked entrance: the whole scene tilts up into place as the stage rises into the
+  // viewport. One transform write on the track (no custom property, so no style recalc of the
+  // subtree), only while the stage is near the viewport, and only when the value actually moved.
   useEffect(() => {
     const el = stageRef.current;
-    if (!el) return;
+    const track = trackRef.current;
+    if (!el || !track) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let frame = 0;
+    let last = -1;
     const update = () => {
       frame = 0;
       const r = el.getBoundingClientRect();
       const vh = window.innerHeight;
+      if (r.bottom < -150 || r.top > vh + 150) return;
       const p = Math.min(1, Math.max(0, (vh - r.top) / (vh * 0.75)));
-      el.style.setProperty("--sp", p.toFixed(3));
+      if (Math.abs(p - last) < 0.004) return;
+      last = p;
+      track.style.transform = p > 0.998 ? "" : `rotateX(${((1 - p) * 11).toFixed(2)}deg) translateY(${((1 - p) * 42).toFixed(1)}px)`;
     };
     const onScroll = () => {
       if (!frame) frame = requestAnimationFrame(update);
@@ -127,6 +137,8 @@ export function ReelStage({ items, soundHint }: { items: ReelItem[]; soundHint: 
       window.removeEventListener("resize", onScroll);
     };
   }, []);
+
+  useEffect(() => () => cancelAnimationFrame(tiltFrame.current), []);
 
   // Only the active card renders controls, so keep keyboard focus alive across a change.
   useEffect(() => {
@@ -273,31 +285,41 @@ export function ReelStage({ items, soundHint }: { items: ReelItem[]; soundHint: 
     }
   };
 
-  // Mouse-follow tilt + glare on the active card (fine pointers only).
+  // Mouse-follow tilt + glare on the active card (fine pointers only). Pointer events only record
+  // the position; one rAF per frame reads the card's box and writes ONE transform (+ the glare's
+  // own two vars), so a fast mouse never causes more than a frame's worth of style work.
+  const applyTilt = useCallback(() => {
+    tiltFrame.current = 0;
+    const p = tiltPoint.current;
+    tiltPoint.current = null;
+    if (!p) return;
+    const tilt = p.card.querySelector<HTMLElement>(".reel-card__tilt");
+    const sheen = p.card.querySelector<HTMLElement>(".reel-sheen");
+    if (!tilt || !sheen) return;
+    const r = p.card.getBoundingClientRect();
+    const px = (p.x - r.left) / r.width;
+    const py = (p.y - r.top) / r.height;
+    tilt.style.transform = `perspective(900px) rotateX(${((0.5 - py) * 14).toFixed(2)}deg) rotateY(${((px - 0.5) * 14).toFixed(2)}deg)`;
+    sheen.style.setProperty("--mx", `${(px * 100).toFixed(1)}%`);
+    sheen.style.setProperty("--my", `${(py * 100).toFixed(1)}%`);
+    sheen.style.opacity = "1";
+  }, []);
+
   const onTiltEnd = (e: PointerEvent<HTMLDivElement>) => {
-    const el = e.currentTarget.querySelector<HTMLElement>(".reel-card__tilt");
-    el?.style.setProperty("--rx", "0deg");
-    el?.style.setProperty("--ry", "0deg");
-    el?.style.setProperty("--glare", "0");
+    tiltPoint.current = null;
+    e.currentTarget.querySelector<HTMLElement>(".reel-card__tilt")?.style.removeProperty("transform");
+    e.currentTarget.querySelector<HTMLElement>(".reel-sheen")?.style.removeProperty("opacity");
   };
 
   const onTilt = (e: PointerEvent<HTMLDivElement>) => {
     if (e.pointerType !== "mouse" || reduced) return;
-    const el = e.currentTarget.querySelector<HTMLElement>(".reel-card__tilt");
-    if (!el) return;
     // A tilting card would slide its own buttons out from under the cursor: ease flat over a control.
     if ((e.target as HTMLElement).closest("button, a")) {
       onTiltEnd(e);
       return;
     }
-    const r = e.currentTarget.getBoundingClientRect();
-    const px = (e.clientX - r.left) / r.width;
-    const py = (e.clientY - r.top) / r.height;
-    el.style.setProperty("--ry", `${((px - 0.5) * 14).toFixed(2)}deg`);
-    el.style.setProperty("--rx", `${((0.5 - py) * 14).toFixed(2)}deg`);
-    el.style.setProperty("--mx", `${(px * 100).toFixed(1)}%`);
-    el.style.setProperty("--my", `${(py * 100).toFixed(1)}%`);
-    el.style.setProperty("--glare", "1");
+    tiltPoint.current = { card: e.currentTarget, x: e.clientX, y: e.clientY };
+    if (!tiltFrame.current) tiltFrame.current = requestAnimationFrame(applyTilt);
   };
 
   const current = items[active];
@@ -315,7 +337,7 @@ export function ReelStage({ items, soundHint }: { items: ReelItem[]; soundHint: 
         onPointerUp={onPointerUp}
         onClickCapture={swallowDragClick}
       >
-        <div className="reel-track">
+        <div className="reel-track" ref={trackRef}>
           {items.map((item, i) => {
             const o = offsetOf(i);
             const isActive = i === active;

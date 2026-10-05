@@ -10,7 +10,7 @@
 > `restaurants/types.ts` (the config contract).
 
 Last verified: 2026-10-05 on branch `jumma-gujjar` (tsc ✓, eslint ✓, `next build` ✓ for Jumma Gujjar **and** the example restaurant, 47-check functional/responsive suite ✓,
-43-check promo-reels suite ✓, mobile Lighthouse: performance 85–93 / accessibility 100 / best-practices 100 / SEO 100 on every page).
+43-check promo-reels suite ✓, mobile Lighthouse: performance 88–93 / accessibility 100 / best-practices 100 / SEO 100; software-rendered frame profile: steady 60 fps through every section, see §15).
 Earlier: 45-check UI-behaviour suite ✓; Nooms text/links/alts identical to the pre-refactor site.
 
 ---
@@ -109,7 +109,7 @@ RestaurantConfig = {
 
 ### Menu data (flat, typed)
 ```ts
-categories: [{ id, label, labelUrdu?, heading, tagline, blurb, image? /*home tile*/, photos?: [Img, Img?] /*menu-page prints*/ }]
+categories: [{ id, label, labelUrdu?, heading, tagline, blurb, image? /*home tile*/, photos?: [Img, Img?] /*menu-page prints*/, homeTile?: false /*menu page only, no homepage tile*/ }]
 items:      [{ id, category /*category.id*/, name, nameUrdu?, description?, price?: "Rs 850", badge?: "Signature", tags?: ["V"|"VG"], image?, featured?, featuredTag? }]
 ```
 `MenuSection`, `MenuCategoryNav`, `CuisineGrid` tiles and `FeaturedItems` all render from this. `price` omitted ⇒ nothing shown; a price with a leading integer ("Rs 1,200", "from Rs 750") counts up
@@ -332,3 +332,23 @@ Data flow: `restaurants/<slug>` → `restaurants/active.ts` → **`app/**` pages
 - `package.json` name is still `nooms-foods`. Rename when the template branch is cut.
 - Branching: `jumma-gujjar` was cut before the Qissa behaviour work landed on `main`, so `main` was merged in (`git merge --no-commit`, **left uncommitted for the owner**). The Jumma work itself is also uncommitted.
 - Jumma open items live in `restaurants/jumma-gujjar/assets-manifest.md` (more photos, a clean tarka clip, permission for the third-party TikTok clip, whether the tin pack is real, the TikTok handle, and the brief's `[CONFIRM]` list).
+
+## 15. Performance rules (learned the hard way; keep them)
+
+The reels section once dropped a mid-range laptop to single-digit fps. JavaScript was never the problem (script time was ~0.15 s over a whole session);
+**paint and composite cost** was. The fixes, and the rules they imply for any new section:
+
+- **Canvas decoration must be cheap.** `Embers` uses pre-rendered sprites + `drawImage` (no per-spark gradients, `shadowBlur` or template strings), 1× pixel density, a 30 fps cap,
+  and **no `mix-blend-mode`**. It samples the page's own frame rate: if the page struggles it halves its sparks, then switches itself off (after a 2.5 s warm-up so load jank can't trigger it).
+  A `contained` canvas must cover only the area that needs it, never a 2000px-tall section.
+- **No `backdrop-filter` over anything that animates or plays video** (it re-blurs every frame): reel controls, the sound ring, the YouTube play button, `.btn-outline` and the dish badges now use
+  solid translucent fills. The scrolled header uses a single `blur(10px)`.
+- **No big `filter: blur()` on animated layers, no filters on `<video>`.** The reel halo is soft radial gradients on a square that only rotates (compositor-only), each radius smaller than its
+  distance to the square's edge (otherwise the edge shows as the square turns). Side reels are dimmed by an overlay's opacity, not `filter: brightness`.
+- **Pointer-driven effects write once per frame.** `ReelStage` and `TiltCard` record the pointer and apply ONE `transform` inside `requestAnimationFrame`; scroll-linked effects write a transform
+  directly (not a CSS custom property, which restyles the whole subtree) and only while near the viewport.
+- **Don't render what isn't seen.** `.cv-section` / `.cv-ribbon` / `.reels` use `content-visibility: auto` + `contain-intrinsic-size: auto …`, so off-screen home sections (and their marquees,
+  halos and counters) cost nothing until near the viewport. Posters/video load lazily (`preload="none"`, posters armed only within a screen of the stage).
+- **Measure, don't guess.** Harness used (kept out of the repo, trivial to recreate with `puppeteer-core`): launch Chrome with `--disable-gpu` (software rendering is a harsh proxy for a weak
+  integrated GPU), optionally `Emulation.setCPUThrottlingRate`, sample `requestAnimationFrame` deltas while scrolling through each section and hovering/tilting, and report fps / p95 / % frames over 33 ms.
+  Before: reels ≈ 4 fps, hero ≈ 10 fps, cuisine hover ≈ 36 fps. After: 60 fps everywhere, also at 4× CPU throttle and at 2× pixel ratio. Re-run it after adding any animated section.

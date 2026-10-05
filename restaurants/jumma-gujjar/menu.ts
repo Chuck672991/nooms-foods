@@ -13,8 +13,10 @@ import { images } from "./images";
  * no published sales ranking, so it would be an unverified popularity claim.
  * Lassi has no price until the owner confirms one.
  *
- * Categories without a photo (breads, mains) render as typographic plates
- * instead of stock imagery pretending to be this kitchen's food.
+ * Categories without a photo (breads, mains) render as typographic plates on the menu page
+ * and are kept off the homepage tile row (`homeTile: false`). The homepage tiles are Nihari,
+ * Biryani & Pulao and Lassi (stills from the owner's own clips) and Doodh ki Bottle (a labelled
+ * stock PLACEHOLDER photo).
  */
 export const menu: MenuContent = {
   hero: {
@@ -40,6 +42,19 @@ export const menu: MenuContent = {
       image: pos(images.tarkaPots, "50% 35%"),
       photos: [images.marrowBowl, pos(images.tarkaPots, "50% 40%")],
     },
+    // [CONFIRM] Biryani and pulao: the brief found them only in an Instagram bio, not on Foodpanda.
+    // Added at the owner's request, with no prices until confirmed.
+    {
+      id: "biryani",
+      label: "Biryani & Pulao",
+      labelUrdu: "بریانی اور پلاؤ",
+      heading: "Biryani & Pulao",
+      tagline: "fragrant and golden",
+      blurb: "Spiced rice to share with the nihari. Message us for today's prices.",
+      image: pos(images.biryaniPlate, "50% 52%"),
+      photos: [pos(images.biryaniPlate, "50% 50%"), pos(images.pulaoPlates, "62% 50%")],
+    },
+    // Breads and mains stay on the menu page; they have no photo yet, so no homepage tile.
     {
       id: "breads",
       label: "Roti & Sheermal",
@@ -47,6 +62,7 @@ export const menu: MenuContent = {
       heading: "Roti, Naan & Sheermal",
       tagline: "fresh and hot",
       blurb: "Milk-enriched sheermal and the breads that belong next to a bowl of nihari.",
+      homeTile: false,
     },
     {
       id: "mains",
@@ -55,15 +71,28 @@ export const menu: MenuContent = {
       heading: "Curries, Daal & Mains",
       tagline: "for the rest of the table",
       blurb: "Qoorma, karhayi, daal and vegetables to share alongside the nihari.",
+      homeTile: false,
     },
     {
-      id: "drinks",
-      label: "Drinks",
-      heading: "Drinks",
+      id: "lassi",
+      label: "Lassi",
+      labelUrdu: "لسی",
+      heading: "Lassi",
       tagline: "cold and creamy",
-      blurb: "Something cold to go with the heat.",
-      image: images.lassiJug,
-      photos: [images.lassiJug],
+      blurb: "Something cold and thick to go with the heat.",
+      image: pos(images.lassiPour, "40% 45%"),
+      photos: [pos(images.lassiPour, "40% 45%"), images.lassiJug],
+    },
+    // [CONFIRM] Doodh ki bottle: added at the owner's request; no price. The photo is a PLACEHOLDER.
+    {
+      id: "doodh",
+      label: "Doodh ki Bottle",
+      labelUrdu: "دودھ کی بوتل",
+      heading: "Doodh ki Bottle",
+      tagline: "fresh by the bottle",
+      blurb: "Fresh milk, by the bottle.",
+      image: pos(images.milkBottles, "40% 50%"),
+      photos: [pos(images.milkBottles, "40% 50%")],
     },
   ],
 
@@ -132,12 +161,25 @@ export const menu: MenuContent = {
     { id: "sada-chana", category: "mains", name: "Sada Chana", price: "Rs 200" },
     { id: "mix-sabzi", category: "mains", name: "Mix Sabzi", price: "Rs 200" },
 
+    // Biryani / pulao: [CONFIRM] what is offered and the prices; none are shown until then.
+    { id: "biryani", category: "biryani", name: "Biryani", nameUrdu: "بریانی" },
+    { id: "pulao", category: "biryani", name: "Pulao", nameUrdu: "پلاؤ" },
+
     // [CONFIRM] Lassi price (older social captions showed roughly Rs 150: not used).
     {
       id: "lassi",
-      category: "drinks",
+      category: "lassi",
       name: "Lassi",
+      nameUrdu: "لسی",
       description: "A cold lassi to go with the bowl.",
+    },
+    // [CONFIRM] Doodh ki bottle: size and price.
+    {
+      id: "doodh-ki-bottle",
+      category: "doodh",
+      name: "Doodh ki Bottle",
+      nameUrdu: "دودھ کی بوتل",
+      description: "Fresh milk by the bottle.",
     },
   ],
 

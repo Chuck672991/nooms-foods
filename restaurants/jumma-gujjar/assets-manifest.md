@@ -18,6 +18,8 @@ regenerated. Paths are referenced from one place only: `restaurants/jumma-gujjar
 | `food/Matka-nihari.png` | 335×597, 311 KB | Hero backdrop, tarka tile/card, story, gallery | A cook with a pan of flame over rows of clay pots. The brand's signature moment. |
 | `food/nihari.png` | 335×597, 240 KB | Nalli card, bowl crops (Maghaz card, hero print), menu print | Hand holding bone marrow over a bowl of nihari. |
 | `food/canned-nihari.png` | 717×960, 856 KB | Gallery | Looks like an AI-generated pack render (corner sparkle). **See open item 3.** |
+| `food/biryani.png` | 335×597, 277 KB | Biryani & Pulao tile + menu print, marquee, gallery | A plate of golden biryani lifted from a large pot. **Added by the owner on 2026-10-05.** |
+| `food/gujjar-pulaao.png` | 335×597, 375 KB | Pulao print (plates only), marquee, gallery | **Added by the owner.** It is a screenshot of a creator's video (a man's face, "Allah Ki bhot MEHARBANI RAHI" captions), so **only the plates at the bottom are used** (cropped); the person and captions are left out. Swap in an own pulao photo when there is one. |
 | `food/desi-ghee.png` | 382×523, 214 KB | Gallery | Close-up of the same tin (also a render, same sparkle). File name says "desi-ghee" but it shows the nihari tin. |
 | `videos/gujjar-promo-tiktok.mp4` | 576×1024, 53 s, 11 MB | Reel "The dairy" | TikTok `@jummagujjar416`. Jumma Gujjar Dairy: shop sign, lassi, desi ghee. Has audio. |
 | `videos/nihari-tarka-tiktok.mp4` | 576×1024, 47 s, 19 MB | Reel "The tarka" | TikTok **`@sultanleonet`** (a creator, not the owner's handle). Flames, bowls, "Special Nihari". Has audio. **See open item 2.** |
@@ -36,6 +38,10 @@ TikTok's burned-in watermark/handle is **left in** every clip (it is also the at
 | `dairy-sign.jpg` | 576×696 | still @ 0:05 of the dairy promo | top 68 % kept: the storefront sign, above TikTok's watermark band |
 | `ghee-tubs.jpg` | 576×716 | still @ 0:50 of the dairy promo | top 70 % kept |
 | `lassi-jug.jpg` | 576×716 | still @ 0:36 of the dairy promo | top 70 % kept |
+| `biryani-plate.jpg` | 670×1194 | `food/biryani.png` | 2× Lanczos resample + light sharpen |
+| `pulao-plates.jpg` | 1005×405 | `food/gujjar-pulaao.png` | bottom 135 px only (the plates), 3× resample |
+| `lassi-pour.jpg` | 1152×1454 | still @ 0:35 of the dairy promo | top 71 % kept (above the watermark), 2× resample. A thick stream of lassi into a steel glass. Homepage **Lassi** tile + menu print. |
+| `biryani-thali.jpg` | 1152×880 | still @ 0:13 of the serving clip | band between 27 % and 70 % of the frame (above the watermark), 2× resample. A thali with two plates of golden rice. Marquee + gallery. |
 | `poster-*.jpg` ×3 | 480×854 | frames of each reel (0:01, 0:00, 0:13) | JPEG q80; shown before/instead of playback |
 | `reel-dairy-promo.mp4` | 480×854, 4.9 MB | `gujjar-promo-tiktok.mp4` | H.264 CRF 31, AAC mono 48 kbps, `faststart` |
 | `reel-tarka.mp4` | 480×854, 6.7 MB | `nihari-tarka-tiktok.mp4` | same |
@@ -54,15 +60,22 @@ No watermark was removed from, or cropped out of, the third-party clip.
 | `seo/favicon.ico` (16/32/48), `seo/icon.png` 64 px, `seo/apple-icon.png` 180 px | Icons, all from the logo |
 | `restaurants/jumma-gujjar/fonts/NotoNastaliqUrdu-500.subset.woff2` (not under `public/`; bundled by `next/font/local`) | Noto Nastaliq Urdu 500 (SIL OFL), subset to the 20 letters the site uses: 61 KB vs 161 KB. Regenerate with `scripts/subset-font.py` after adding new Urdu text (see the header of `fonts.ts`). |
 
-## Not downloaded
+## Downloaded (`downloaded/`): one placeholder
 
-No stock or web images were added (brief §0.1 allows it for gaps). Instead, categories with no honest
-photo (**Roti & Sheermal, Curries & Daal**) render as typographic plates: their Urdu names set large in
-gold over a warm glow (`CategoryGlyph`). Nothing pretends to be this kitchen's food. A `downloaded/`
-folder and a placeholder log were therefore not needed; if placeholders are added later, log filename,
-source URL, licence and placeholder/final status here.
+| File | Source | Licence | Status |
+|---|---|---|---|
+| `downloaded/milk-bottles.jpg` (1400×933, unmodified) | Jason Murphy on Unsplash, <https://unsplash.com/photos/GBmqt8_zMVc> (file `photo-1557759171-258278b1578b`) | Unsplash License (free for commercial use, no attribution required) | **PLACEHOLDER**: used for the homepage **Doodh ki Bottle** tile and its menu print. The footage has no bottled milk. Replace with the owner's own photo. Its `alt` says "Placeholder photo: …". |
+
+Everything else the site shows is the owner's own material. Categories with no honest photo (**Roti &
+Sheermal, Curries & Daal**) render as typographic plates on the menu page (their Urdu names set large in
+gold over a warm glow, `CategoryGlyph`) and are kept off the homepage tile row (`homeTile: false`).
+Log any further placeholder here: filename, source URL, licence, placeholder/final status.
 
 ## Open items (need the owner)
+
+0. **Biryani & Pulao, Doodh ki Bottle** were added at the owner's request. The brief had found biryani/pulao
+   only in an Instagram bio (not on Foodpanda), and a milk bottle appears nowhere. No prices, no descriptions
+   beyond the name: confirm what is actually served and the prices (and replace the milk-bottle placeholder).
 
 1. **Photos.** Only 4 photos exist (+3 stills from the owner's clips). The brief aims for 8–15, and
    needs a **nalli close-up, sheermal/roti, curries, lassi, the outlet exterior**, and ideally a

@@ -438,6 +438,8 @@ export type MenuCategory = {
   heading: string;
   /** Optional Urdu label (Nastaliq). Also the artwork when a category has no photo. */
   labelUrdu?: string;
+  /** Set `false` to keep the category on the menu page but off the homepage tile row. Default true. */
+  homeTile?: boolean;
   /** Italic line beside the heading. */
   tagline: string;
   blurb: string;

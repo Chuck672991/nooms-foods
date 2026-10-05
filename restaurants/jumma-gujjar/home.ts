@@ -40,7 +40,12 @@ export const home: HomeContent = {
       nihariBowl,
       images.gheeTubs,
       pos(images.marrowBowl, "50% 22%"),
+      pos(images.biryaniPlate, "50% 52%"),
+      pos(images.pulaoPlates, "62% 50%"),
+      pos(images.biryaniThali, "30% 55%"),
       images.lassiJug,
+      pos(images.lassiPour, "40% 45%"),
+      pos(images.milkBottles, "40% 50%"),
       pos(images.dairySign, "50% 30%"),
       contain(images.logoMark),
     ],
@@ -59,7 +64,7 @@ export const home: HomeContent = {
   cuisine: {
     eyebrow: "The Menu",
     title: "Pick your *bowl.*",
-    lead: "Nihari, fresh breads, curries and daal, and lassi. Tap a tile to jump straight to it on the menu.",
+    lead: "Nihari, biryani and pulao, lassi and fresh milk. Tap a tile to jump straight to it on the menu.",
     allTile: { eyebrow: "Everything", label: "Full menu" },
   },
 

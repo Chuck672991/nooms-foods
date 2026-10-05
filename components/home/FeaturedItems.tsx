@@ -83,7 +83,7 @@ export function FeaturedItems({
   const spans = spansFor(cards.length + 1);
 
   return (
-    <section className={sectionY}>
+    <section className={`${sectionY} cv-section`}>
       <div className={container}>
         <Reveal>
           <SectionHeading eyebrow={content.eyebrow} title={content.title} lead={content.lead} />

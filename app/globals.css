@@ -310,10 +310,9 @@
   }
 
   .btn-outline {
-    background: color-mix(in srgb, var(--background) 40%, transparent);
+    background: color-mix(in srgb, var(--background) 52%, transparent);
     border-color: color-mix(in srgb, var(--foreground) 38%, transparent);
     color: var(--foreground);
-    backdrop-filter: blur(6px);
   }
 
   .btn-outline:hover {
@@ -549,9 +548,9 @@
 
   .site-header.scrolled {
     padding-block: 8px;
-    background: color-mix(in srgb, var(--deep) 72%, transparent);
-    -webkit-backdrop-filter: blur(16px) saturate(1.2);
-    backdrop-filter: blur(16px) saturate(1.2);
+    background: color-mix(in srgb, var(--deep) 78%, transparent);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
     border-bottom-color: color-mix(in srgb, var(--foreground) 10%, transparent);
   }
 
@@ -801,14 +800,12 @@
     padding: 6px 12px;
     border-radius: 100px;
     border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
-    background: color-mix(in srgb, var(--deep) 60%, transparent);
+    background: color-mix(in srgb, var(--deep) 72%, transparent);
     color: var(--accent-soft);
     font-size: 0.62rem;
     letter-spacing: 0.18em;
     line-height: 1.2;
     text-transform: uppercase;
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
   }
 
   /* The body is pulled forward in 3D so it floats above the photo while tilting. */
@@ -831,7 +828,6 @@
 
   .embers--local {
     position: absolute;
-    mix-blend-mode: screen;
   }
 
   /* ---------- Typographic category plate (no honest photo yet) ---------- */
@@ -887,6 +883,26 @@
   }
 
   /* ---------- Promo reels (components/ui/ReelStage.tsx) ---------- */
+  /* Below-the-fold home sections: not rendered (no layout, paint or running animations such as
+     marquees) until they are near the viewport. `auto` in contain-intrinsic-size remembers each
+     section's real height after its first render, so the scrollbar doesn't jump. */
+  .cv-section {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 800px;
+  }
+
+  .cv-ribbon {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 72px;
+  }
+
+  /* Far off screen the section isn't rendered at all (no layout, paint or running animations);
+     `auto` remembers its real height after the first render so the scrollbar doesn't jump. */
+  .reels {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 1900px;
+  }
+
   .reels-bg {
     background:
       radial-gradient(55% 40% at 50% 46%, color-mix(in srgb, var(--primary) 9%, transparent), transparent 72%),
@@ -917,7 +933,6 @@
      and --d (deal order); everything else is derived from those. */
   .reel-stage {
     --reel-w: min(66vw, 292px);
-    --sp: 1;
     position: relative;
     margin-inline: auto;
     width: 100%;
@@ -935,13 +950,12 @@
     }
   }
 
-  /* --sp (0 → 1) is written by scroll: the whole scene tilts up into place. */
+  /* The scene tilts up into place with scroll: ReelStage writes this element's transform directly. */
   .reel-track {
     position: absolute;
     inset: 0;
     transform-style: preserve-3d;
     transform-origin: 50% 100%;
-    transform: rotateX(calc((1 - var(--sp)) * 11deg)) translateY(calc((1 - var(--sp)) * 42px));
   }
 
   .reel-card {
@@ -958,6 +972,7 @@
       scale(calc(1 - var(--abs) * 0.05));
     opacity: max(0, calc(1 - var(--abs) * 0.2));
     z-index: calc(10 - var(--abs));
+    will-change: transform, opacity;
     transition:
       transform 0.95s var(--ease-io),
       opacity 0.7s var(--ease);
@@ -980,15 +995,20 @@
   .reel-card__tilt {
     position: absolute;
     inset: 0;
-    transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
     transition: transform 0.35s var(--ease);
   }
 
-  /* A slow-turning, blurred conic glow behind the active card: the ghee flame. */
+  /* A slow-turning glow behind the active card: the ghee flame. Soft radial blobs orbiting on a
+     square that only ever rotates (compositor-only): no blur filter, no mask, no conic repaint. */
   .reel-halo {
     position: absolute;
-    inset: -14%;
+    left: 50%;
+    top: 50%;
     z-index: -1;
+    width: calc(var(--reel-w) * 2.6);
+    aspect-ratio: 1;
+    margin: 0;
+    translate: -50% -50%;
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.9s var(--ease);
@@ -998,11 +1018,15 @@
     content: "";
     position: absolute;
     inset: 0;
-    border-radius: 42%;
-    background: conic-gradient(from 0deg, var(--primary), var(--secondary), var(--accent-soft), var(--primary));
-    filter: blur(46px);
-    opacity: 0.5;
-    animation: reel-spin 11s linear infinite;
+    background:
+      radial-gradient(circle calc(var(--reel-w) * 0.95) at 50% 38%, var(--primary) 0, transparent 100%),
+      radial-gradient(circle calc(var(--reel-w) * 0.95) at 50% 62%, var(--secondary) 0, transparent 100%),
+      radial-gradient(circle calc(var(--reel-w) * 0.75) at 60% 50%, var(--accent-soft) 0, transparent 100%);
+    /* Every radius is smaller than the distance to the square's edge, so no gradient is ever
+       clipped by it (a clipped one shows as a straight edge as the square turns). */
+    opacity: 0.9;
+    animation: reel-spin 14s linear infinite;
+    will-change: transform;
   }
 
   .reel-card[data-active] .reel-halo {
@@ -1035,15 +1059,27 @@
     height: 100%;
     object-fit: cover;
     background: var(--surface-raised);
-    transition: filter 0.7s var(--ease);
   }
 
-  .reel-card:not([data-active]) .reel-video {
-    filter: brightness(0.58) saturate(0.85);
+  /* Side reels are dimmed by a dark overlay (opacity animates on the compositor) rather than a
+     filter on the video, which would be re-rendered for every decoded frame. */
+  .reel-frame::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: #000;
+    opacity: 0;
+    transition: opacity 0.7s var(--ease);
   }
 
-  .reel-card:not([data-active]):hover .reel-video {
-    filter: brightness(0.8) saturate(1);
+  .reel-card:not([data-active]) .reel-frame::after {
+    opacity: 0.45;
+  }
+
+  .reel-card:not([data-active]):hover .reel-frame::after {
+    opacity: 0.2;
   }
 
   .reel-frame:fullscreen {
@@ -1060,9 +1096,9 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: radial-gradient(circle at var(--mx, 50%) var(--my, 30%), rgba(255, 255, 255, 0.28), transparent 46%);
-    mix-blend-mode: soft-light;
-    opacity: var(--glare, 0);
+    z-index: 2;
+    background: radial-gradient(circle at var(--mx, 50%) var(--my, 30%), rgba(255, 255, 255, 0.17), transparent 46%);
+    opacity: 0;
     transition: opacity 0.3s;
   }
 
@@ -1115,11 +1151,9 @@
     height: 40px;
     border-radius: 100px;
     border: 1px solid color-mix(in srgb, var(--foreground) 28%, transparent);
-    background: color-mix(in srgb, var(--deep) 55%, transparent);
+    background: color-mix(in srgb, var(--deep) 72%, transparent);
     color: var(--foreground);
     cursor: pointer;
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
     transition:
       background-color 0.25s,
       color 0.25s,
@@ -1162,10 +1196,8 @@
     place-items: center;
     border-radius: 50%;
     border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
-    background: color-mix(in srgb, var(--deep) 58%, transparent);
+    background: color-mix(in srgb, var(--deep) 74%, transparent);
     color: var(--accent);
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
     transition:
       transform 0.4s var(--ease),
       background-color 0.3s,

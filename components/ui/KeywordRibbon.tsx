@@ -16,7 +16,7 @@ export function KeywordRibbon({
   reverse?: boolean;
 }) {
   return (
-    <div className="overflow-hidden ribbon-gradient py-5 text-on-primary">
+    <div className="cv-ribbon overflow-hidden ribbon-gradient py-5 text-on-primary">
       <Marquee duration={duration} reverse={reverse}>
         {items.map((item) => (
           <span

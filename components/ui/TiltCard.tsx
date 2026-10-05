@@ -31,16 +31,28 @@ export function TiltCard({
     if (!fine || reduce) return;
 
     let rect: DOMRect | null = null;
+    let frame = 0;
+    let point: { x: number; y: number } | null = null;
     const enter = () => {
       rect = card.getBoundingClientRect();
     };
-    const move = (e: MouseEvent) => {
+    // Mouse events only record the position; one rAF per frame writes the transform.
+    const apply = () => {
+      frame = 0;
+      if (!point) return;
       rect ??= card.getBoundingClientRect();
-      const px = (e.clientX - rect.left) / rect.width - 0.5;
-      const py = (e.clientY - rect.top) / rect.height - 0.5;
+      const px = (point.x - rect.left) / rect.width - 0.5;
+      const py = (point.y - rect.top) / rect.height - 0.5;
       card.style.transform = `perspective(900px) rotateY(${(px * 7).toFixed(2)}deg) rotateX(${(-py * 7).toFixed(2)}deg) translateY(-6px)`;
     };
+    const move = (e: MouseEvent) => {
+      point = { x: e.clientX, y: e.clientY };
+      if (!frame) frame = requestAnimationFrame(apply);
+    };
     const leave = () => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = 0;
+      point = null;
       card.style.transform = "";
       rect = null;
     };
@@ -49,6 +61,7 @@ export function TiltCard({
     card.addEventListener("mousemove", move);
     card.addEventListener("mouseleave", leave);
     return () => {
+      if (frame) cancelAnimationFrame(frame);
       card.removeEventListener("mouseenter", enter);
       card.removeEventListener("mousemove", move);
       card.removeEventListener("mouseleave", leave);
