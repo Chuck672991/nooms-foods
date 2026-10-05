@@ -8,7 +8,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { RichText } from "@/components/ui/RichText";
 import { resolveButtons } from "@/lib/restaurant";
 import { pageMetadata } from "@/lib/seo";
-import { container } from "@/lib/utils";
+import { container, stagger } from "@/lib/utils";
 import { restaurant } from "@/restaurants/active";
 import { mapLinks } from "@/restaurants/helpers";
 
@@ -48,7 +48,7 @@ export default function ContactPage() {
         </Reveal>
       </section>
 
-      <section className="bg-surface py-24 sm:py-32">
+      <section className="section-tint py-24 sm:py-32">
         <div className={container}>
           <Reveal>
             <div className="mx-auto max-w-2xl text-center">
@@ -64,7 +64,7 @@ export default function ContactPage() {
 
           <ul className="mx-auto mt-14 grid max-w-5xl gap-5 md:grid-cols-3">
             {channels.items.map((c, i) => (
-              <Reveal as="li" key={c.title} delay={i * 90}>
+              <Reveal as="li" key={c.title} delay={stagger(i)}>
                 <a
                   href={c.href}
                   {...(c.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}

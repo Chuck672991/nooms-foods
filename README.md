@@ -7,7 +7,8 @@ phone + maps, a weekly hours table, no Journal) that proves nothing in the share
 Nooms-specific. It is also the starter you copy for the next client.
 
 Next.js 16 (App Router) · Tailwind CSS v4 · TypeScript. The visual design follows
-`NOOMS_FOODS_DESIGN_BRIEF.md` (a pattern reference built from qissa.co.uk).
+`NOOMS_FOODS_DESIGN_BRIEF.md` (a pattern reference built from qissa.co.uk) and the UI behaviour (navbar,
+starfield, parallax, gallery, cuisine, signature cards, menu overlay) follows `Qissa Website — UI Reverse-Engineering Spec.md`.
 
 ```bash
 npm run dev                                          # http://localhost:3000

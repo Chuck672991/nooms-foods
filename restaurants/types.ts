@@ -244,11 +244,22 @@ export type Seo = {
 
 // ───────────────────────────── Shared page pieces ─────────────────────────────
 
+/** Optional muted, looping hero footage (shown instead of the blurred photo). */
+export type HeroVideo = {
+  src: string;
+  /** MIME type, default "video/webm". */
+  type?: string;
+  /** Poster frame; defaults to the hero backdrop image. */
+  poster?: string;
+};
+
 export type PageHeroContent = {
   eyebrow?: string;
   title: Rich;
   lead?: string;
   backdrop: Img;
+  /** Optional footage behind the hero (the backdrop image stays as the poster). */
+  video?: HeroVideo;
   /** Optional sharp photo shown beside the title on large screens. */
   card?: { image: Img; caption?: string; aspect?: "portrait" | "square" };
 };
@@ -277,6 +288,8 @@ export type FeaturedCard = {
   title: string;
   description: string;
   image: Img;
+  /** Makes the whole card a link (e.g. "/menu#burgers"). Derived automatically for menu-based cards. */
+  href?: string;
 };
 
 export type SplitCard = {
@@ -295,6 +308,8 @@ export type HomeContent = {
     title: Rich;
     lead: string;
     backdrop: Img;
+    /** Optional footage behind the hero (the backdrop image stays as the poster). */
+    video?: HeroVideo;
     /** Two sharp prints flanking the headline. */
     cards: [Img, Img];
     scrollCue: string;

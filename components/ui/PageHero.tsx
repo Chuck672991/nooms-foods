@@ -25,8 +25,8 @@ export function PageHero({
 }) {
   const { eyebrow, title, lead, backdrop, card } = hero;
   return (
-    <section className="scope-deep dots relative isolate flex min-h-[68svh] items-end overflow-hidden pt-36 pb-16 sm:pb-20 lg:min-h-[72svh]">
-      <Backdrop image={backdrop} blur={22} opacity={0.8} priority />
+    <section className="scope-deep relative isolate flex min-h-[68svh] items-end overflow-hidden pt-40 pb-16 sm:pb-20 lg:min-h-[72svh]">
+      <Backdrop image={backdrop} blur={22} opacity={0.8} priority parallax video={hero.video} />
       <div className="scrim-hero absolute inset-0 -z-10" aria-hidden="true" />
 
       <div className="mx-auto grid w-full max-w-page items-end gap-12 px-5 sm:px-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:px-14">

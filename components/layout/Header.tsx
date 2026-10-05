@@ -22,7 +22,18 @@ export type HeaderProps = {
   locationLine: string;
 };
 
-function Logo({ name, logo, onClick }: { name: string; logo: Img; onClick?: () => void }) {
+function Logo({
+  name,
+  logo,
+  onClick,
+  shrinks = false,
+}: {
+  name: string;
+  logo: Img;
+  onClick?: () => void;
+  /** Header logo: sized by `.brand-logo` so it condenses with the bar on scroll. */
+  shrinks?: boolean;
+}) {
   return (
     <Link
       href="/"
@@ -33,11 +44,11 @@ function Logo({ name, logo, onClick }: { name: string; logo: Img; onClick?: () =
       <Image
         src={logo.src}
         alt=""
-        width={96}
-        height={96}
-        sizes="48px"
+        width={logo.width}
+        height={logo.height}
+        sizes={shrinks ? "(min-width: 768px) 92px, 48px" : "48px"}
         preload
-        className="h-11 w-11 rounded-[10px] sm:h-12 sm:w-12"
+        className={`rounded-[10px] ${shrinks ? "brand-logo" : "h-11 w-11 sm:h-12 sm:w-12"}`}
       />
     </Link>
   );
@@ -52,15 +63,20 @@ export function Header({ name, logo, links, order, visit, locationLine }: Header
   // The overlay is "open for" the page it was opened on, so navigating
   // closes it automatically without an effect.
   const [openFor, setOpenFor] = useState<string | null>(null);
-  const [scrolled, setScrolled] = useState(false);
   const open = openFor === pathname;
 
+  const headerRef = useRef<HTMLElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
+  // Scroll-shrink: one boolean class past 60px; all the visual change is CSS
+  // transitions (see `.site-header` in globals.css). No re-render per scroll.
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
+    const header = headerRef.current;
+    if (!header) return;
+    const onScroll = () => header.classList.toggle("scrolled", window.scrollY > 60);
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -86,6 +102,18 @@ export function Header({ name, logo, links, order, visit, locationLine }: Header
 
   const close = () => setOpenFor(null);
 
+  // The menu overlay opens as a circle growing from the hamburger.
+  const openMenu = () => {
+    const trigger = triggerRef.current;
+    const overlay = overlayRef.current;
+    if (trigger && overlay) {
+      const r = trigger.getBoundingClientRect();
+      overlay.style.setProperty("--cx", `${Math.round(r.left + r.width / 2)}px`);
+      overlay.style.setProperty("--cy", `${Math.round(r.top + r.height / 2)}px`);
+    }
+    setOpenFor(pathname);
+  };
+
   // Keep Tab inside the overlay while it is open.
   const trapFocus = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key !== "Tab" || !overlayRef.current) return;
@@ -104,30 +132,24 @@ export function Header({ name, logo, links, order, visit, locationLine }: Header
 
   return (
     <>
-      <header
-        className={`scope-deep fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color,backdrop-filter] duration-300 ${
-          scrolled
-            ? "border-foreground/10 bg-background/80 backdrop-blur-xl"
-            : "border-transparent bg-transparent"
-        }`}
-      >
-        <div className="mx-auto grid h-[4.5rem] max-w-page grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 sm:h-20 sm:px-8 lg:px-14">
+      <header ref={headerRef} className="site-header scope-deep fixed inset-x-0 top-0 z-50">
+        <div className="mx-auto grid max-w-page grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 sm:px-8 lg:px-14">
           <button
             ref={triggerRef}
             type="button"
-            onClick={() => setOpenFor(pathname)}
+            onClick={openMenu}
             aria-expanded={open}
             aria-controls="site-menu"
             className="group -ml-2 inline-flex h-11 items-center gap-3 justify-self-start rounded-full px-2 text-[0.72rem] font-bold tracking-[0.18em] uppercase"
           >
             <span className="flex w-6 flex-col gap-[6px]" aria-hidden="true">
-              <span className="block h-[1.5px] w-full bg-foreground transition-all duration-300 group-hover:bg-primary" />
-              <span className="block h-[1.5px] w-4 bg-foreground transition-all duration-300 group-hover:w-full group-hover:bg-primary" />
+              <span className="block h-[1.5px] w-full bg-foreground transition-all duration-300 group-hover:bg-accent" />
+              <span className="block h-[1.5px] w-4 bg-foreground transition-all duration-300 group-hover:w-full group-hover:bg-accent" />
             </span>
             <span className="max-[359px]:sr-only transition-colors group-hover:text-accent">Menu</span>
           </button>
 
-          <Logo name={name} logo={logo} />
+          <Logo name={name} logo={logo} shrinks />
 
           {/* Compact on phones (<640px): tighter pills, no external icon, so
               all three zones fit down to 360px without overflow. */}
@@ -165,7 +187,7 @@ export function Header({ name, logo, links, order, visit, locationLine }: Header
         aria-modal="true"
         aria-label="Site menu"
         onKeyDown={trapFocus}
-        className="scope-deep nav-overlay dots fixed inset-0 z-[60] flex flex-col overflow-y-auto bg-deep"
+        className="scope-deep nav-overlay fixed inset-0 z-[60] flex flex-col overflow-y-auto bg-deep"
       >
         <div className="mx-auto flex h-[4.5rem] w-full max-w-page shrink-0 items-center justify-between px-4 sm:h-20 sm:px-8 lg:px-14">
           <Logo name={name} logo={logo} onClick={close} />

@@ -80,7 +80,7 @@ export default async function ArticlePage({ params }: PageProps<"/journal/[slug]
       </article>
 
       {more.length > 0 ? (
-        <section className="border-t border-foreground/10 bg-surface py-20 sm:py-24">
+        <section className="section-tint border-t border-foreground/10 py-20 sm:py-24">
           <div className={container}>
             <Reveal>
               <h2 className="display h-section">

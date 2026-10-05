@@ -5,7 +5,7 @@ import { PageHero } from "@/components/ui/PageHero";
 import { Reveal } from "@/components/ui/Reveal";
 import { ctaProps } from "@/lib/restaurant";
 import { pageMetadata } from "@/lib/seo";
-import { container } from "@/lib/utils";
+import { container, stagger } from "@/lib/utils";
 import { restaurant } from "@/restaurants/active";
 
 export const metadata = pageMetadata(restaurant, "journal", "/journal");
@@ -22,7 +22,7 @@ export default function JournalPage() {
         {/* Grid scales to any number of articles without layout changes. */}
         <div className="grid gap-x-12 gap-y-20 md:grid-cols-2">
           {journal.articles.map((article, i) => (
-            <Reveal key={article.slug} delay={i * 100}>
+            <Reveal key={article.slug} delay={stagger(i)}>
               <ArticleCard article={article} />
             </Reveal>
           ))}

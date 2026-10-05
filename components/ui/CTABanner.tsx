@@ -24,7 +24,7 @@ export function CTABanner({
   buttons: ResolvedButton[];
 }) {
   return (
-    <section className="scope-deep dots relative isolate overflow-hidden py-28 sm:py-36">
+    <section className="scope-deep relative isolate overflow-hidden py-28 sm:py-36">
       <Backdrop image={image} opacity={0.5} />
       <div className="scrim-band absolute inset-0 -z-10" aria-hidden="true" />
       <div className="mx-auto max-w-3xl px-5 text-center sm:px-8">

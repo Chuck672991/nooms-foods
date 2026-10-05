@@ -8,3 +8,6 @@ export const container = "mx-auto w-full max-w-page px-5 sm:px-8 lg:px-14";
 
 /** Vertical rhythm for a homepage "chapter". */
 export const sectionY = "py-24 sm:py-32 lg:py-40";
+
+/** Sibling reveal stagger: 0.08s steps capped at 4 (the spec's d1–d4). */
+export const stagger = (index: number) => Math.min(index, 4) * 80;
